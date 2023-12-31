@@ -26,7 +26,7 @@ setMethod(
         #match to compartment names
         matchings <- list(
             Susceptible = "S",
-            Immune = c("S", "R", "M"),
+            Immune = c("V", "R", "M"),
             `Immune(acquired)` = "R",
             `Immune(Vaccine)` = "V",
             `Immune(Maternal)` = "M",

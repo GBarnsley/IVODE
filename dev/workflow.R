@@ -4,8 +4,8 @@ odin::odin_package(here::here())
 document()
 load_all()
 
-use_r("format")
-use_test("format")
+use_r("project")
+use_test("project")
 use_package("methods")
 
 test()

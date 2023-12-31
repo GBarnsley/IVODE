@@ -913,21 +913,6 @@ void deterministic_rhs(deterministic_internal* internal, double t, double * stat
   for (int i = 1; i <= internal->dim_vaccination_rate; ++i) {
     internal->vaccination_rate[i - 1] = -(log(1 - internal->p_vaccinate[i - 1]));
   }
-  {
-     int i = 1;
-     dstatedt[0 + i - 1] = births_S + internal->natural_waning[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
-  }
-  {
-     int i = 2;
-     dstatedt[0 + i - 1] = loses_maternal + internal->ageing_S[i - 1 - 1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
-  }
-  {
-     int i = 3;
-     dstatedt[0 + i - 1] = internal->ageing_S[i - 1 - 1] + internal->ageing_M[1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
-  }
-  for (int i = 4; i <= internal->n_age; ++i) {
-    dstatedt[0 + i - 1] = internal->ageing_S[i - 1 - 1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
-  }
   double vaccination_attempts_M = internal->vaccination_rate[1] * M[1];
   for (int i = 1; i <= internal->dim_vaccination_attempts_R; ++i) {
     internal->vaccination_attempts_R[i - 1] = internal->vaccination_rate[i - 1] * R[i - 1];
@@ -948,7 +933,7 @@ void deterministic_rhs(deterministic_internal* internal, double t, double * stat
   }
   {
      int i = 2;
-     dstatedt[internal->offset_variable_M + i - 1] = internal->ageing_M[0] + vaccinations_M - internal->ageing_M[1] - internal->deaths_M[1] - loses_maternal;
+     dstatedt[internal->offset_variable_M + i - 1] = internal->ageing_M[0] - vaccinations_M - internal->ageing_M[1] - internal->deaths_M[1] - loses_maternal;
   }
   {
      int i = 1;
@@ -956,6 +941,21 @@ void deterministic_rhs(deterministic_internal* internal, double t, double * stat
   }
   for (int i = 2; i <= internal->n_age; ++i) {
     dstatedt[internal->dim_S + i - 1] = internal->infections[i - 1] + internal->ageing_R[i - 1 - 1] - internal->vaccinations_R[i - 1] - internal->ageing_R[i - 1] - internal->deaths_R[i - 1] - internal->natural_waning[i - 1];
+  }
+  {
+     int i = 1;
+     dstatedt[0 + i - 1] = births_S + internal->natural_waning[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
+  }
+  {
+     int i = 2;
+     dstatedt[0 + i - 1] = loses_maternal + internal->ageing_S[i - 1 - 1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->vaccinations_S[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
+  }
+  {
+     int i = 3;
+     dstatedt[0 + i - 1] = internal->ageing_S[i - 1 - 1] + internal->ageing_M[1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->vaccinations_S[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
+  }
+  for (int i = 4; i <= internal->n_age; ++i) {
+    dstatedt[0 + i - 1] = internal->ageing_S[i - 1 - 1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->vaccinations_S[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
   }
   {
      int i = 1;
