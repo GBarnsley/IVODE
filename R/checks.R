@@ -42,8 +42,8 @@ check_format_age_group_par <- function(par, tt_par, n_age) {
             stop(paste(par_name, "must be a matrix"))
         }
         n_t <- length(tt_par)
-        if (dim(par) != c(n_age, n_t)) {
-            stop(paste0(par_name, " must have the same number of columns as tt_", par_name, " and the same number of rows as n_age"))
+        if (dim(par) != c(n_t, n_age)) {
+            stop(paste0(par_name, " must have the same number of rows as tt_", par_name, " and the same number of columns as n_age"))
         }
     } else {
         if (!is.vector(par)) {

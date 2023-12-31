@@ -1,16 +1,15 @@
 library(devtools)
 
+odin::odin_package(here::here())
+document()
 load_all()
 
-use_r("checks")
-use_test("run_model")
-use_package()
+use_r("format")
+use_test("format")
+use_package("methods")
 
-document()
 test()
 check()
 install()
-
-odin::odin_package(here::here())
 
 build_readme()

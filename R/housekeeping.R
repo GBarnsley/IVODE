@@ -10,5 +10,10 @@
 #' @name IVODE
 #' @useDynLib IVODE
 #' @importFrom odin odin
+#' @importFrom methods setGeneric
+#' @importFrom methods setMethod
+#' @importFrom methods signature
+#' @importFrom magrittr %>%
+#' @importFrom rlang .data
 NULL
 #> NULL

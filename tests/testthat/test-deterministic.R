@@ -1,6 +1,6 @@
 test_that("multiplication works", {
   type <- "deterministic"
-  t <- c(0, 365)
+  t <- seq(0, 365)
   age_group_sizes <- c(365/12, 365*(11/12), 14*365, 45*365)
   n_age <- length(age_group_sizes) + 1
   death_rates <- 1/c(100, 1000, 100, 10, 1)
@@ -10,12 +10,60 @@ test_that("multiplication works", {
   force_of_infection <- c(0, 0, 0, 0, 0)
   tt_force_of_infection <- NULL
   vaccine_efficacy <- 0.5
-  vaccination_coverage <- c(0, 0, 0, 0, 0)
-  tt_vaccination_coverage <- NULL
-  duration_of_immunity <- 365*5
-  duration_of_maternal_immunity <- 364/2
+  vaccine_doses <- c(0, 100, 0, 0, 0)
+  tt_vaccine_doses <- NULL
+  duration_of_immunity <- 365 * 5
+  duration_of_maternal_immunity <- 364 / 2
   M_0 <- rep(0, 2)
   S_0 <- rep(1000, n_age)
   R_0 <- rep(0, n_age)
 
+  res <- simulate(
+    type,
+    t,
+    age_group_sizes,
+    death_rates,
+    tt_death_rates,
+    birth_rates,
+    tt_birth_rates,
+    force_of_infection,
+    tt_force_of_infection,
+    vaccine_efficacy,
+    vaccine_doses,
+    tt_vaccine_doses,
+    duration_of_immunity,
+    duration_of_maternal_immunity,
+    S_0,
+    R_0,
+    M_0
+  )
+  # no nan
+  expect_false(any(is.nan(res$output)))
+  # all postive (with lower bound of 0.1)
+  expect_true(all(res$output >= -0.1))
+  #number of vaccinated people should roughly be doses * time * efficacy (no waning)
+  duration_of_immunity <- 365 * 10000
+  res <- simulate(
+    type,
+    t,
+    age_group_sizes,
+    death_rates,
+    tt_death_rates,
+    birth_rates,
+    tt_birth_rates,
+    force_of_infection,
+    tt_force_of_infection,
+    vaccine_efficacy,
+    vaccine_doses,
+    tt_vaccine_doses,
+    duration_of_immunity,
+    duration_of_maternal_immunity,
+    S_0,
+    R_0,
+    M_0
+  )
+  vaccine_immune <- format_output(res, "Immune(Vaccine)", reduce_age = TRUE) %>%
+    dplyr::pull(value) %>%
+    sum()
+  sum(vaccine_doses) * max(t) * vaccine_efficacy
 })

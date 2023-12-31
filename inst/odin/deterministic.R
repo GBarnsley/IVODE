@@ -4,23 +4,47 @@ n_age <- user()
 age_rate[] <- user()
 dim(age_rate) <- n_age
 
-death_rate[] <- user()
-dim(death_rate) <- n_age
+tt_death_rate[] <- user()
+dim(tt_death_rate) <- user()
 
-birth_rate[] <- user()
-dim(birth_rate) <- n_age
+death_rate[,] <- user()
+dim(death_rate) <- c(length(tt_death_rate), n_age)
+
+t_death_rate[] <- interpolate(tt_death_rate, death_rate, "constant")
+dim(t_death_rate) <- n_age
+
+tt_birth_rate[] <- user()
+dim(tt_birth_rate) <- user()
+
+birth_rate[,] <- user()
+dim(birth_rate) <- c(length(tt_birth_rate), n_age)
+
+t_birth_rate[] <- interpolate(tt_birth_rate, birth_rate, "constant")
+dim(t_birth_rate) <- n_age
 
 maternal_waning <- user()
 
 waning <- user()
 
-foi[] <- user()
-dim(foi) <- n_age
+tt_foi[] <- user()
+dim(tt_foi) <- user()
+
+foi[,] <- user()
+dim(foi) <- c(length(tt_foi), n_age)
+
+t_foi[] <- interpolate(tt_foi, foi, "constant")
+dim(t_foi) <- n_age
 
 vaccine_efficacy <- user()
 
-vaccination_rate[] <- user()
-dim(vaccination_rate) <- n_age
+tt_vaccine_doses[] <- user()
+dim(tt_vaccine_doses) <- user()
+
+vaccine_doses[,] <- user()
+dim(vaccine_doses) <- c(length(tt_vaccine_doses), n_age)
+
+t_vaccine_doses[] <- interpolate(tt_vaccine_doses, vaccine_doses, "constant")
+dim(t_vaccine_doses) <- n_age
 
 M_0[] <- user()
 dim(M_0) <- 2
@@ -31,13 +55,12 @@ dim(S_0) <- n_age
 R_0[] <- user()
 dim(R_0) <- n_age
 
-
 #tranistions
 
-S_births[] <- S[i] * birth_rate[i]
+S_births[] <- S[i] * t_birth_rate[i]
 dim(S_births) <- n_age
 
-M_births[] <- (R[i] + V[i]) * birth_rate[i]
+M_births[] <- (R[i] + V[i]) * t_birth_rate[i]
 dim(M_births) <- n_age
 
 births_S <- sum(S_births[])
@@ -52,19 +75,19 @@ dim(vaccine_waning) <- n_age
 
 loses_maternal <- maternal_waning * M[2] #only wanes in the last stage
 
-infections[] <- foi[i] * S[i]
+infections[] <- t_foi[i] * S[i]
 dim(infections) <- n_age
 
-deaths_S[] <- death_rate[i] * S[i]
+deaths_S[] <- t_death_rate[i] * S[i]
 dim(deaths_S) <- n_age
 
-deaths_R[] <- death_rate[i] * R[i]
+deaths_R[] <- t_death_rate[i] * R[i]
 dim(deaths_R) <- n_age
 
-deaths_V[] <- death_rate[i] * V[i]
+deaths_V[] <- t_death_rate[i] * V[i]
 dim(deaths_V) <- n_age
 
-deaths_M[] <- death_rate[i] * M[i]
+deaths_M[] <- t_death_rate[i] * M[i]
 dim(deaths_M) <- 2
 
 ageing_S[] <- age_rate[i] * S[i]
@@ -80,6 +103,19 @@ ageing_M[] <- age_rate[i] * M[i]
 dim(ageing_M) <- 2
 
 #todo add check against non all or nothing
+#vaccine dose calculations (with a numerical limit)
+p_vaccinate[1] <-  0
+p_vaccinate[2] <- min(t_vaccine_doses[i] / (S[i] + M[i]), 0.9999)
+p_vaccinate[3:n_age] <- min(t_vaccine_doses[i] / S[i], 0.9999)
+dim(p_vaccinate) <- n_age
+
+#output(temp_p_vaccinate[]) <- p_vaccinate[i]
+#dim(temp_p_vaccinate) <- n_age
+
+
+vaccination_rate[] <- -log(1 - p_vaccinate[i])
+dim(vaccination_rate) <- n_age
+
 vaccination_attempts[] <- vaccination_rate[i] * S[i]
 dim(vaccination_attempts) <- n_age
 
@@ -108,8 +144,8 @@ deriv(R[2:n_age]) <- infections[i] + ageing_R[i-1] - ageing_R[i] - deaths_R[i] -
 dim(V) <- n_age
 initial(V[]) <- 0
 deriv(V[1]) <- 0
-deriv(V[2]) <- vaccinations[i] + maternal_vaccinations - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
-deriv(V[3:n_age]) <- vaccinations[i] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
+deriv(V[2]) <- vaccinations[i] + maternal_vaccinations + ageing_V[i-1] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
+deriv(V[3:n_age]) <- vaccinations[i] + ageing_V[i-1] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
 
 dim(M) <- 2
 initial(M[]) <- M_0[i]

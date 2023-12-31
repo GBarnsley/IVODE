@@ -19,9 +19,10 @@ deterministic_ <- R6::R6Class(
       initmod_desolve = "deterministic_initmod_desolve",
       output_dde = "deterministic_output_dde"),
     dll = "IVODE",
-    user = c("age_rate", "birth_rate", "child_bearing_ages", "death_rate",
-             "foi", "M_0", "maternal_waning", "n_age", "R_0", "S_0",
-             "vaccination_rate", "vaccine_efficacy", "waning"),
+    user = c("age_rate", "birth_rate", "death_rate", "foi", "M_0",
+             "maternal_waning", "n_age", "R_0", "S_0", "tt_birth_rate",
+             "tt_death_rate", "tt_foi", "tt_vaccine_doses", "vaccine_doses",
+             "vaccine_efficacy", "waning"),
 
     ## This is never called, but is used to ensure that R finds our
     ## symbols that we will use from the package; without this they
