@@ -105,8 +105,8 @@ dim(ageing_M) <- 2
 #todo add check against non all or nothing
 #vaccine dose calculations (with a numerical limit)
 p_vaccinate[1] <-  0
-p_vaccinate[2] <- min(t_vaccine_doses[i] / (S[i] + M[i]), 0.9999)
-p_vaccinate[3:n_age] <- min(t_vaccine_doses[i] / S[i], 0.9999)
+p_vaccinate[2] <- min(t_vaccine_doses[i] / (S[i] + R[i] + M[i]), 0.9999)
+p_vaccinate[3:n_age] <- min(t_vaccine_doses[i] / (S[i] + R[i]), 0.9999)
 dim(p_vaccinate) <- n_age
 
 #output(temp_p_vaccinate[]) <- p_vaccinate[i]
@@ -116,47 +116,50 @@ dim(p_vaccinate) <- n_age
 vaccination_rate[] <- -log(1 - p_vaccinate[i])
 dim(vaccination_rate) <- n_age
 
-vaccination_attempts[] <- vaccination_rate[i] * S[i]
-dim(vaccination_attempts) <- n_age
+vaccination_attempts_S[] <- vaccination_rate[i] * S[i]
+dim(vaccination_attempts_S) <- n_age
 
-vaccinations[] <- vaccination_attempts[i] * vaccine_efficacy
-dim(vaccinations) <- n_age
+vaccinations_S[] <- vaccination_attempts_S[i] * vaccine_efficacy
+dim(vaccinations_S) <- n_age
 
-#failed_vaccinations[] <- vaccination_attempts[i] - vaccinations[i]
-#dim(failed_vaccinations) <- n_age
+vaccination_attempts_R[] <- vaccination_rate[i] * R[i]
+dim(vaccination_attempts_R) <- n_age
 
-maternal_vaccination_attempts <- vaccination_rate[2] * M[2]
-maternal_vaccinations <- maternal_vaccination_attempts * vaccine_efficacy
-#failed_maternal_vaccinations <- maternal_vaccination_attempts - maternal_vaccinations
+vaccinations_R[] <- vaccination_attempts_R[i] * vaccine_efficacy
+dim(vaccinations_R) <- n_age
+
+vaccination_attempts_M <- vaccination_rate[2] * M[2]
+vaccinations_M <- vaccination_attempts_M * vaccine_efficacy
 
 #derivatives
 dim(S) <- n_age
 initial(S[]) <- S_0[i]
 deriv(S[1]) <- births_S + natural_waning[i] - ageing_S[i] - infections[i] - deaths_S[i]
 deriv(S[2]) <- loses_maternal + ageing_S[i-1] + natural_waning[i] + vaccine_waning[i] - ageing_S[i] - infections[i] - deaths_S[i]
-deriv(S[3:n_age]) <- ageing_S[i-1] + natural_waning[i] + vaccine_waning[i] - ageing_S[i] - infections[i] - deaths_S[i]
+deriv(S[3]) <- ageing_S[i-1] + ageing_M[2] + natural_waning[i] + vaccine_waning[i] - ageing_S[i] - infections[i] - deaths_S[i]
+deriv(S[4:n_age]) <- ageing_S[i-1] + natural_waning[i] + vaccine_waning[i] - ageing_S[i] - infections[i] - deaths_S[i]
 
 dim(R) <- n_age
 initial(R[]) <- R_0[i]
 deriv(R[1]) <- infections[i] - ageing_R[i] - deaths_R[i] - natural_waning[i]
-deriv(R[2:n_age]) <- infections[i] + ageing_R[i-1] - ageing_R[i] - deaths_R[i] - natural_waning[i]
+deriv(R[2:n_age]) <- infections[i] + ageing_R[i-1] - vaccinations_R[i] - ageing_R[i] - deaths_R[i] - natural_waning[i]
 
 dim(V) <- n_age
 initial(V[]) <- 0
 deriv(V[1]) <- 0
-deriv(V[2]) <- vaccinations[i] + maternal_vaccinations + ageing_V[i-1] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
-deriv(V[3:n_age]) <- vaccinations[i] + ageing_V[i-1] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
+deriv(V[2]) <- vaccinations_S[i] + vaccinations_R[i] + vaccinations_M + ageing_V[i-1] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
+deriv(V[3:n_age]) <- vaccinations_S[i] + vaccinations_R[i] + ageing_V[i-1] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
 
 dim(M) <- 2
 initial(M[]) <- M_0[i]
-deriv(M[1]) <- births_M + vaccine_waning[1] - ageing_M[1] - deaths_M[1]
-deriv(M[2]) <- ageing_M[1] + maternal_vaccinations - ageing_M[2] - deaths_M[2] - loses_maternal
+deriv(M[1]) <- births_M - ageing_M[1] - deaths_M[1]
+deriv(M[2]) <- ageing_M[1] + vaccinations_M - ageing_M[2] - deaths_M[2] - loses_maternal
 
 #outputs
 
-total_vaccine_doses[1] <- vaccination_attempts[1]
-total_vaccine_doses[2] <- vaccination_attempts[2] + maternal_vaccination_attempts
-total_vaccine_doses[3:n_age] <- vaccination_attempts[i]
+total_vaccine_doses[1] <- vaccination_attempts_S[1] + vaccination_attempts_R[1]
+total_vaccine_doses[2] <- vaccination_attempts_S[2] + vaccination_attempts_R[2] + vaccination_attempts_M
+total_vaccine_doses[3:n_age] <- vaccination_attempts_S[i] + vaccination_attempts_R[i]
 dim(total_vaccine_doses) <- n_age
 
 output(vaccination_doses[]) <- total_vaccine_doses[i]

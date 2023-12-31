@@ -42,7 +42,8 @@ test_that("multiplication works", {
   # all postive (with lower bound of 0.1)
   expect_true(all(res$output >= -0.1))
   #number of vaccinated people should roughly be doses * time * efficacy (no waning)
-  duration_of_immunity <- 365 * 10000
+  duration_of_immunity <- 365 * 100000000
+  death_rates <- rep(0, n_age)
   res <- simulate(
     type,
     t,
@@ -64,6 +65,6 @@ test_that("multiplication works", {
   )
   vaccine_immune <- format_output(res, "Immune(Vaccine)", reduce_age = TRUE) %>%
     dplyr::pull(value) %>%
-    sum()
-  sum(vaccine_doses) * max(t) * vaccine_efficacy
+    max()
+  expect_true(abs(sum(vaccine_doses) * max(t) * vaccine_efficacy - vaccine_immune)/vaccine_immune < 0.01)
 })

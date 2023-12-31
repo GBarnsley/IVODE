@@ -123,10 +123,12 @@ typedef struct deterministic_internal {
   int dim_tt_foi;
   int dim_tt_vaccine_doses;
   int dim_V;
-  int dim_vaccination_attempts;
+  int dim_vaccination_attempts_R;
+  int dim_vaccination_attempts_S;
   int dim_vaccination_doses;
   int dim_vaccination_rate;
-  int dim_vaccinations;
+  int dim_vaccinations_R;
+  int dim_vaccinations_S;
   int dim_vaccine_doses;
   int dim_vaccine_doses_1;
   int dim_vaccine_doses_2;
@@ -161,9 +163,11 @@ typedef struct deterministic_internal {
   double *tt_death_rate;
   double *tt_foi;
   double *tt_vaccine_doses;
-  double *vaccination_attempts;
+  double *vaccination_attempts_R;
+  double *vaccination_attempts_S;
   double *vaccination_rate;
-  double *vaccinations;
+  double *vaccinations_R;
+  double *vaccinations_S;
   double *vaccine_doses;
   double vaccine_efficacy;
   double *vaccine_waning;
@@ -264,9 +268,11 @@ void deterministic_finalise(SEXP internal_p) {
     R_Free(internal->tt_death_rate);
     R_Free(internal->tt_foi);
     R_Free(internal->tt_vaccine_doses);
-    R_Free(internal->vaccination_attempts);
+    R_Free(internal->vaccination_attempts_R);
+    R_Free(internal->vaccination_attempts_S);
     R_Free(internal->vaccination_rate);
-    R_Free(internal->vaccinations);
+    R_Free(internal->vaccinations_R);
+    R_Free(internal->vaccinations_S);
     R_Free(internal->vaccine_doses);
     R_Free(internal->vaccine_waning);
     R_Free(internal);
@@ -312,9 +318,11 @@ SEXP deterministic_create(SEXP user) {
   internal->tt_death_rate = NULL;
   internal->tt_foi = NULL;
   internal->tt_vaccine_doses = NULL;
-  internal->vaccination_attempts = NULL;
+  internal->vaccination_attempts_R = NULL;
+  internal->vaccination_attempts_S = NULL;
   internal->vaccination_rate = NULL;
-  internal->vaccinations = NULL;
+  internal->vaccinations_R = NULL;
+  internal->vaccinations_S = NULL;
   internal->vaccine_doses = NULL;
   internal->vaccine_waning = NULL;
   internal->dim_ageing_M = 2;
@@ -359,7 +367,7 @@ void deterministic_initmod_desolve(void(* odeparms) (int *, double *)) {
 }
 SEXP deterministic_contents(SEXP internal_p) {
   deterministic_internal *internal = deterministic_get_internal(internal_p, 1);
-  SEXP contents = PROTECT(allocVector(VECSXP, 95));
+  SEXP contents = PROTECT(allocVector(VECSXP, 99));
   SEXP age_rate = PROTECT(allocVector(REALSXP, internal->dim_age_rate));
   memcpy(REAL(age_rate), internal->age_rate, internal->dim_age_rate * sizeof(double));
   SET_VECTOR_ELT(contents, 0, age_rate);
@@ -434,104 +442,112 @@ SEXP deterministic_contents(SEXP internal_p) {
   SET_VECTOR_ELT(contents, 47, ScalarInteger(internal->dim_tt_foi));
   SET_VECTOR_ELT(contents, 48, ScalarInteger(internal->dim_tt_vaccine_doses));
   SET_VECTOR_ELT(contents, 49, ScalarInteger(internal->dim_V));
-  SET_VECTOR_ELT(contents, 50, ScalarInteger(internal->dim_vaccination_attempts));
-  SET_VECTOR_ELT(contents, 51, ScalarInteger(internal->dim_vaccination_doses));
-  SET_VECTOR_ELT(contents, 52, ScalarInteger(internal->dim_vaccination_rate));
-  SET_VECTOR_ELT(contents, 53, ScalarInteger(internal->dim_vaccinations));
-  SET_VECTOR_ELT(contents, 54, ScalarInteger(internal->dim_vaccine_doses));
-  SET_VECTOR_ELT(contents, 55, ScalarInteger(internal->dim_vaccine_doses_1));
-  SET_VECTOR_ELT(contents, 56, ScalarInteger(internal->dim_vaccine_doses_2));
-  SET_VECTOR_ELT(contents, 57, ScalarInteger(internal->dim_vaccine_waning));
+  SET_VECTOR_ELT(contents, 50, ScalarInteger(internal->dim_vaccination_attempts_R));
+  SET_VECTOR_ELT(contents, 51, ScalarInteger(internal->dim_vaccination_attempts_S));
+  SET_VECTOR_ELT(contents, 52, ScalarInteger(internal->dim_vaccination_doses));
+  SET_VECTOR_ELT(contents, 53, ScalarInteger(internal->dim_vaccination_rate));
+  SET_VECTOR_ELT(contents, 54, ScalarInteger(internal->dim_vaccinations_R));
+  SET_VECTOR_ELT(contents, 55, ScalarInteger(internal->dim_vaccinations_S));
+  SET_VECTOR_ELT(contents, 56, ScalarInteger(internal->dim_vaccine_doses));
+  SET_VECTOR_ELT(contents, 57, ScalarInteger(internal->dim_vaccine_doses_1));
+  SET_VECTOR_ELT(contents, 58, ScalarInteger(internal->dim_vaccine_doses_2));
+  SET_VECTOR_ELT(contents, 59, ScalarInteger(internal->dim_vaccine_waning));
   SEXP foi = PROTECT(allocVector(REALSXP, internal->dim_foi));
   memcpy(REAL(foi), internal->foi, internal->dim_foi * sizeof(double));
   odin_set_dim(foi, 2, internal->dim_foi_1, internal->dim_foi_2);
-  SET_VECTOR_ELT(contents, 58, foi);
+  SET_VECTOR_ELT(contents, 60, foi);
   SEXP infections = PROTECT(allocVector(REALSXP, internal->dim_infections));
   memcpy(REAL(infections), internal->infections, internal->dim_infections * sizeof(double));
-  SET_VECTOR_ELT(contents, 59, infections);
+  SET_VECTOR_ELT(contents, 61, infections);
   SEXP initial_M = PROTECT(allocVector(REALSXP, internal->dim_M));
   memcpy(REAL(initial_M), internal->initial_M, internal->dim_M * sizeof(double));
-  SET_VECTOR_ELT(contents, 60, initial_M);
+  SET_VECTOR_ELT(contents, 62, initial_M);
   SEXP initial_R = PROTECT(allocVector(REALSXP, internal->dim_R));
   memcpy(REAL(initial_R), internal->initial_R, internal->dim_R * sizeof(double));
-  SET_VECTOR_ELT(contents, 61, initial_R);
+  SET_VECTOR_ELT(contents, 63, initial_R);
   SEXP initial_S = PROTECT(allocVector(REALSXP, internal->dim_S));
   memcpy(REAL(initial_S), internal->initial_S, internal->dim_S * sizeof(double));
-  SET_VECTOR_ELT(contents, 62, initial_S);
+  SET_VECTOR_ELT(contents, 64, initial_S);
   SEXP initial_V = PROTECT(allocVector(REALSXP, internal->dim_V));
   memcpy(REAL(initial_V), internal->initial_V, internal->dim_V * sizeof(double));
-  SET_VECTOR_ELT(contents, 63, initial_V);
+  SET_VECTOR_ELT(contents, 65, initial_V);
   SEXP M_0 = PROTECT(allocVector(REALSXP, internal->dim_M_0));
   memcpy(REAL(M_0), internal->M_0, internal->dim_M_0 * sizeof(double));
-  SET_VECTOR_ELT(contents, 68, M_0);
+  SET_VECTOR_ELT(contents, 70, M_0);
   SEXP M_births = PROTECT(allocVector(REALSXP, internal->dim_M_births));
   memcpy(REAL(M_births), internal->M_births, internal->dim_M_births * sizeof(double));
-  SET_VECTOR_ELT(contents, 69, M_births);
-  SET_VECTOR_ELT(contents, 70, ScalarReal(internal->maternal_waning));
-  SET_VECTOR_ELT(contents, 71, ScalarInteger(internal->n_age));
+  SET_VECTOR_ELT(contents, 71, M_births);
+  SET_VECTOR_ELT(contents, 72, ScalarReal(internal->maternal_waning));
+  SET_VECTOR_ELT(contents, 73, ScalarInteger(internal->n_age));
   SEXP natural_waning = PROTECT(allocVector(REALSXP, internal->dim_natural_waning));
   memcpy(REAL(natural_waning), internal->natural_waning, internal->dim_natural_waning * sizeof(double));
-  SET_VECTOR_ELT(contents, 72, natural_waning);
-  SET_VECTOR_ELT(contents, 73, ScalarInteger(internal->offset_variable_M));
-  SET_VECTOR_ELT(contents, 74, ScalarInteger(internal->offset_variable_V));
+  SET_VECTOR_ELT(contents, 74, natural_waning);
+  SET_VECTOR_ELT(contents, 75, ScalarInteger(internal->offset_variable_M));
+  SET_VECTOR_ELT(contents, 76, ScalarInteger(internal->offset_variable_V));
   SEXP p_vaccinate = PROTECT(allocVector(REALSXP, internal->dim_p_vaccinate));
   memcpy(REAL(p_vaccinate), internal->p_vaccinate, internal->dim_p_vaccinate * sizeof(double));
-  SET_VECTOR_ELT(contents, 75, p_vaccinate);
+  SET_VECTOR_ELT(contents, 77, p_vaccinate);
   SEXP R_0 = PROTECT(allocVector(REALSXP, internal->dim_R_0));
   memcpy(REAL(R_0), internal->R_0, internal->dim_R_0 * sizeof(double));
-  SET_VECTOR_ELT(contents, 76, R_0);
+  SET_VECTOR_ELT(contents, 78, R_0);
   SEXP S_0 = PROTECT(allocVector(REALSXP, internal->dim_S_0));
   memcpy(REAL(S_0), internal->S_0, internal->dim_S_0 * sizeof(double));
-  SET_VECTOR_ELT(contents, 77, S_0);
+  SET_VECTOR_ELT(contents, 79, S_0);
   SEXP S_births = PROTECT(allocVector(REALSXP, internal->dim_S_births));
   memcpy(REAL(S_births), internal->S_births, internal->dim_S_births * sizeof(double));
-  SET_VECTOR_ELT(contents, 78, S_births);
+  SET_VECTOR_ELT(contents, 80, S_births);
   SEXP t_birth_rate = PROTECT(allocVector(REALSXP, internal->dim_t_birth_rate));
   memcpy(REAL(t_birth_rate), internal->t_birth_rate, internal->dim_t_birth_rate * sizeof(double));
-  SET_VECTOR_ELT(contents, 79, t_birth_rate);
+  SET_VECTOR_ELT(contents, 81, t_birth_rate);
   SEXP t_death_rate = PROTECT(allocVector(REALSXP, internal->dim_t_death_rate));
   memcpy(REAL(t_death_rate), internal->t_death_rate, internal->dim_t_death_rate * sizeof(double));
-  SET_VECTOR_ELT(contents, 80, t_death_rate);
+  SET_VECTOR_ELT(contents, 82, t_death_rate);
   SEXP t_foi = PROTECT(allocVector(REALSXP, internal->dim_t_foi));
   memcpy(REAL(t_foi), internal->t_foi, internal->dim_t_foi * sizeof(double));
-  SET_VECTOR_ELT(contents, 81, t_foi);
+  SET_VECTOR_ELT(contents, 83, t_foi);
   SEXP t_vaccine_doses = PROTECT(allocVector(REALSXP, internal->dim_t_vaccine_doses));
   memcpy(REAL(t_vaccine_doses), internal->t_vaccine_doses, internal->dim_t_vaccine_doses * sizeof(double));
-  SET_VECTOR_ELT(contents, 82, t_vaccine_doses);
+  SET_VECTOR_ELT(contents, 84, t_vaccine_doses);
   SEXP total_vaccine_doses = PROTECT(allocVector(REALSXP, internal->dim_total_vaccine_doses));
   memcpy(REAL(total_vaccine_doses), internal->total_vaccine_doses, internal->dim_total_vaccine_doses * sizeof(double));
-  SET_VECTOR_ELT(contents, 83, total_vaccine_doses);
+  SET_VECTOR_ELT(contents, 85, total_vaccine_doses);
   SEXP tt_birth_rate = PROTECT(allocVector(REALSXP, internal->dim_tt_birth_rate));
   memcpy(REAL(tt_birth_rate), internal->tt_birth_rate, internal->dim_tt_birth_rate * sizeof(double));
-  SET_VECTOR_ELT(contents, 84, tt_birth_rate);
+  SET_VECTOR_ELT(contents, 86, tt_birth_rate);
   SEXP tt_death_rate = PROTECT(allocVector(REALSXP, internal->dim_tt_death_rate));
   memcpy(REAL(tt_death_rate), internal->tt_death_rate, internal->dim_tt_death_rate * sizeof(double));
-  SET_VECTOR_ELT(contents, 85, tt_death_rate);
+  SET_VECTOR_ELT(contents, 87, tt_death_rate);
   SEXP tt_foi = PROTECT(allocVector(REALSXP, internal->dim_tt_foi));
   memcpy(REAL(tt_foi), internal->tt_foi, internal->dim_tt_foi * sizeof(double));
-  SET_VECTOR_ELT(contents, 86, tt_foi);
+  SET_VECTOR_ELT(contents, 88, tt_foi);
   SEXP tt_vaccine_doses = PROTECT(allocVector(REALSXP, internal->dim_tt_vaccine_doses));
   memcpy(REAL(tt_vaccine_doses), internal->tt_vaccine_doses, internal->dim_tt_vaccine_doses * sizeof(double));
-  SET_VECTOR_ELT(contents, 87, tt_vaccine_doses);
-  SEXP vaccination_attempts = PROTECT(allocVector(REALSXP, internal->dim_vaccination_attempts));
-  memcpy(REAL(vaccination_attempts), internal->vaccination_attempts, internal->dim_vaccination_attempts * sizeof(double));
-  SET_VECTOR_ELT(contents, 88, vaccination_attempts);
+  SET_VECTOR_ELT(contents, 89, tt_vaccine_doses);
+  SEXP vaccination_attempts_R = PROTECT(allocVector(REALSXP, internal->dim_vaccination_attempts_R));
+  memcpy(REAL(vaccination_attempts_R), internal->vaccination_attempts_R, internal->dim_vaccination_attempts_R * sizeof(double));
+  SET_VECTOR_ELT(contents, 90, vaccination_attempts_R);
+  SEXP vaccination_attempts_S = PROTECT(allocVector(REALSXP, internal->dim_vaccination_attempts_S));
+  memcpy(REAL(vaccination_attempts_S), internal->vaccination_attempts_S, internal->dim_vaccination_attempts_S * sizeof(double));
+  SET_VECTOR_ELT(contents, 91, vaccination_attempts_S);
   SEXP vaccination_rate = PROTECT(allocVector(REALSXP, internal->dim_vaccination_rate));
   memcpy(REAL(vaccination_rate), internal->vaccination_rate, internal->dim_vaccination_rate * sizeof(double));
-  SET_VECTOR_ELT(contents, 89, vaccination_rate);
-  SEXP vaccinations = PROTECT(allocVector(REALSXP, internal->dim_vaccinations));
-  memcpy(REAL(vaccinations), internal->vaccinations, internal->dim_vaccinations * sizeof(double));
-  SET_VECTOR_ELT(contents, 90, vaccinations);
+  SET_VECTOR_ELT(contents, 92, vaccination_rate);
+  SEXP vaccinations_R = PROTECT(allocVector(REALSXP, internal->dim_vaccinations_R));
+  memcpy(REAL(vaccinations_R), internal->vaccinations_R, internal->dim_vaccinations_R * sizeof(double));
+  SET_VECTOR_ELT(contents, 93, vaccinations_R);
+  SEXP vaccinations_S = PROTECT(allocVector(REALSXP, internal->dim_vaccinations_S));
+  memcpy(REAL(vaccinations_S), internal->vaccinations_S, internal->dim_vaccinations_S * sizeof(double));
+  SET_VECTOR_ELT(contents, 94, vaccinations_S);
   SEXP vaccine_doses = PROTECT(allocVector(REALSXP, internal->dim_vaccine_doses));
   memcpy(REAL(vaccine_doses), internal->vaccine_doses, internal->dim_vaccine_doses * sizeof(double));
   odin_set_dim(vaccine_doses, 2, internal->dim_vaccine_doses_1, internal->dim_vaccine_doses_2);
-  SET_VECTOR_ELT(contents, 91, vaccine_doses);
-  SET_VECTOR_ELT(contents, 92, ScalarReal(internal->vaccine_efficacy));
+  SET_VECTOR_ELT(contents, 95, vaccine_doses);
+  SET_VECTOR_ELT(contents, 96, ScalarReal(internal->vaccine_efficacy));
   SEXP vaccine_waning = PROTECT(allocVector(REALSXP, internal->dim_vaccine_waning));
   memcpy(REAL(vaccine_waning), internal->vaccine_waning, internal->dim_vaccine_waning * sizeof(double));
-  SET_VECTOR_ELT(contents, 93, vaccine_waning);
-  SET_VECTOR_ELT(contents, 94, ScalarReal(internal->waning));
-  SEXP nms = PROTECT(allocVector(STRSXP, 95));
+  SET_VECTOR_ELT(contents, 97, vaccine_waning);
+  SET_VECTOR_ELT(contents, 98, ScalarReal(internal->waning));
+  SEXP nms = PROTECT(allocVector(STRSXP, 99));
   SET_STRING_ELT(nms, 0, mkChar("age_rate"));
   SET_STRING_ELT(nms, 1, mkChar("ageing_M"));
   SET_STRING_ELT(nms, 2, mkChar("ageing_R"));
@@ -582,53 +598,57 @@ SEXP deterministic_contents(SEXP internal_p) {
   SET_STRING_ELT(nms, 47, mkChar("dim_tt_foi"));
   SET_STRING_ELT(nms, 48, mkChar("dim_tt_vaccine_doses"));
   SET_STRING_ELT(nms, 49, mkChar("dim_V"));
-  SET_STRING_ELT(nms, 50, mkChar("dim_vaccination_attempts"));
-  SET_STRING_ELT(nms, 51, mkChar("dim_vaccination_doses"));
-  SET_STRING_ELT(nms, 52, mkChar("dim_vaccination_rate"));
-  SET_STRING_ELT(nms, 53, mkChar("dim_vaccinations"));
-  SET_STRING_ELT(nms, 54, mkChar("dim_vaccine_doses"));
-  SET_STRING_ELT(nms, 55, mkChar("dim_vaccine_doses_1"));
-  SET_STRING_ELT(nms, 56, mkChar("dim_vaccine_doses_2"));
-  SET_STRING_ELT(nms, 57, mkChar("dim_vaccine_waning"));
-  SET_STRING_ELT(nms, 58, mkChar("foi"));
-  SET_STRING_ELT(nms, 59, mkChar("infections"));
-  SET_STRING_ELT(nms, 60, mkChar("initial_M"));
-  SET_STRING_ELT(nms, 61, mkChar("initial_R"));
-  SET_STRING_ELT(nms, 62, mkChar("initial_S"));
-  SET_STRING_ELT(nms, 63, mkChar("initial_V"));
-  SET_STRING_ELT(nms, 64, mkChar("interpolate_t_birth_rate"));
-  SET_STRING_ELT(nms, 65, mkChar("interpolate_t_death_rate"));
-  SET_STRING_ELT(nms, 66, mkChar("interpolate_t_foi"));
-  SET_STRING_ELT(nms, 67, mkChar("interpolate_t_vaccine_doses"));
-  SET_STRING_ELT(nms, 68, mkChar("M_0"));
-  SET_STRING_ELT(nms, 69, mkChar("M_births"));
-  SET_STRING_ELT(nms, 70, mkChar("maternal_waning"));
-  SET_STRING_ELT(nms, 71, mkChar("n_age"));
-  SET_STRING_ELT(nms, 72, mkChar("natural_waning"));
-  SET_STRING_ELT(nms, 73, mkChar("offset_variable_M"));
-  SET_STRING_ELT(nms, 74, mkChar("offset_variable_V"));
-  SET_STRING_ELT(nms, 75, mkChar("p_vaccinate"));
-  SET_STRING_ELT(nms, 76, mkChar("R_0"));
-  SET_STRING_ELT(nms, 77, mkChar("S_0"));
-  SET_STRING_ELT(nms, 78, mkChar("S_births"));
-  SET_STRING_ELT(nms, 79, mkChar("t_birth_rate"));
-  SET_STRING_ELT(nms, 80, mkChar("t_death_rate"));
-  SET_STRING_ELT(nms, 81, mkChar("t_foi"));
-  SET_STRING_ELT(nms, 82, mkChar("t_vaccine_doses"));
-  SET_STRING_ELT(nms, 83, mkChar("total_vaccine_doses"));
-  SET_STRING_ELT(nms, 84, mkChar("tt_birth_rate"));
-  SET_STRING_ELT(nms, 85, mkChar("tt_death_rate"));
-  SET_STRING_ELT(nms, 86, mkChar("tt_foi"));
-  SET_STRING_ELT(nms, 87, mkChar("tt_vaccine_doses"));
-  SET_STRING_ELT(nms, 88, mkChar("vaccination_attempts"));
-  SET_STRING_ELT(nms, 89, mkChar("vaccination_rate"));
-  SET_STRING_ELT(nms, 90, mkChar("vaccinations"));
-  SET_STRING_ELT(nms, 91, mkChar("vaccine_doses"));
-  SET_STRING_ELT(nms, 92, mkChar("vaccine_efficacy"));
-  SET_STRING_ELT(nms, 93, mkChar("vaccine_waning"));
-  SET_STRING_ELT(nms, 94, mkChar("waning"));
+  SET_STRING_ELT(nms, 50, mkChar("dim_vaccination_attempts_R"));
+  SET_STRING_ELT(nms, 51, mkChar("dim_vaccination_attempts_S"));
+  SET_STRING_ELT(nms, 52, mkChar("dim_vaccination_doses"));
+  SET_STRING_ELT(nms, 53, mkChar("dim_vaccination_rate"));
+  SET_STRING_ELT(nms, 54, mkChar("dim_vaccinations_R"));
+  SET_STRING_ELT(nms, 55, mkChar("dim_vaccinations_S"));
+  SET_STRING_ELT(nms, 56, mkChar("dim_vaccine_doses"));
+  SET_STRING_ELT(nms, 57, mkChar("dim_vaccine_doses_1"));
+  SET_STRING_ELT(nms, 58, mkChar("dim_vaccine_doses_2"));
+  SET_STRING_ELT(nms, 59, mkChar("dim_vaccine_waning"));
+  SET_STRING_ELT(nms, 60, mkChar("foi"));
+  SET_STRING_ELT(nms, 61, mkChar("infections"));
+  SET_STRING_ELT(nms, 62, mkChar("initial_M"));
+  SET_STRING_ELT(nms, 63, mkChar("initial_R"));
+  SET_STRING_ELT(nms, 64, mkChar("initial_S"));
+  SET_STRING_ELT(nms, 65, mkChar("initial_V"));
+  SET_STRING_ELT(nms, 66, mkChar("interpolate_t_birth_rate"));
+  SET_STRING_ELT(nms, 67, mkChar("interpolate_t_death_rate"));
+  SET_STRING_ELT(nms, 68, mkChar("interpolate_t_foi"));
+  SET_STRING_ELT(nms, 69, mkChar("interpolate_t_vaccine_doses"));
+  SET_STRING_ELT(nms, 70, mkChar("M_0"));
+  SET_STRING_ELT(nms, 71, mkChar("M_births"));
+  SET_STRING_ELT(nms, 72, mkChar("maternal_waning"));
+  SET_STRING_ELT(nms, 73, mkChar("n_age"));
+  SET_STRING_ELT(nms, 74, mkChar("natural_waning"));
+  SET_STRING_ELT(nms, 75, mkChar("offset_variable_M"));
+  SET_STRING_ELT(nms, 76, mkChar("offset_variable_V"));
+  SET_STRING_ELT(nms, 77, mkChar("p_vaccinate"));
+  SET_STRING_ELT(nms, 78, mkChar("R_0"));
+  SET_STRING_ELT(nms, 79, mkChar("S_0"));
+  SET_STRING_ELT(nms, 80, mkChar("S_births"));
+  SET_STRING_ELT(nms, 81, mkChar("t_birth_rate"));
+  SET_STRING_ELT(nms, 82, mkChar("t_death_rate"));
+  SET_STRING_ELT(nms, 83, mkChar("t_foi"));
+  SET_STRING_ELT(nms, 84, mkChar("t_vaccine_doses"));
+  SET_STRING_ELT(nms, 85, mkChar("total_vaccine_doses"));
+  SET_STRING_ELT(nms, 86, mkChar("tt_birth_rate"));
+  SET_STRING_ELT(nms, 87, mkChar("tt_death_rate"));
+  SET_STRING_ELT(nms, 88, mkChar("tt_foi"));
+  SET_STRING_ELT(nms, 89, mkChar("tt_vaccine_doses"));
+  SET_STRING_ELT(nms, 90, mkChar("vaccination_attempts_R"));
+  SET_STRING_ELT(nms, 91, mkChar("vaccination_attempts_S"));
+  SET_STRING_ELT(nms, 92, mkChar("vaccination_rate"));
+  SET_STRING_ELT(nms, 93, mkChar("vaccinations_R"));
+  SET_STRING_ELT(nms, 94, mkChar("vaccinations_S"));
+  SET_STRING_ELT(nms, 95, mkChar("vaccine_doses"));
+  SET_STRING_ELT(nms, 96, mkChar("vaccine_efficacy"));
+  SET_STRING_ELT(nms, 97, mkChar("vaccine_waning"));
+  SET_STRING_ELT(nms, 98, mkChar("waning"));
   setAttrib(contents, R_NamesSymbol, nms);
-  UNPROTECT(40);
+  UNPROTECT(42);
   return contents;
 }
 SEXP deterministic_set_user(SEXP internal_p, SEXP user) {
@@ -663,10 +683,12 @@ SEXP deterministic_set_user(SEXP internal_p, SEXP user) {
   internal->dim_t_vaccine_doses = internal->n_age;
   internal->dim_total_vaccine_doses = internal->n_age;
   internal->dim_V = internal->n_age;
-  internal->dim_vaccination_attempts = internal->n_age;
+  internal->dim_vaccination_attempts_R = internal->n_age;
+  internal->dim_vaccination_attempts_S = internal->n_age;
   internal->dim_vaccination_doses = internal->n_age;
   internal->dim_vaccination_rate = internal->n_age;
-  internal->dim_vaccinations = internal->n_age;
+  internal->dim_vaccinations_R = internal->n_age;
+  internal->dim_vaccinations_S = internal->n_age;
   internal->dim_vaccine_waning = internal->n_age;
   internal->M_0 = (double*) user_get_array(user, false, internal->M_0, "M_0", NA_REAL, NA_REAL, 1, internal->dim_M_0);
   internal->age_rate = (double*) user_get_array(user, false, internal->age_rate, "age_rate", NA_REAL, NA_REAL, 1, internal->dim_age_rate);
@@ -708,12 +730,16 @@ SEXP deterministic_set_user(SEXP internal_p, SEXP user) {
   internal->t_vaccine_doses = (double*) R_Calloc(internal->dim_t_vaccine_doses, double);
   R_Free(internal->total_vaccine_doses);
   internal->total_vaccine_doses = (double*) R_Calloc(internal->dim_total_vaccine_doses, double);
-  R_Free(internal->vaccination_attempts);
-  internal->vaccination_attempts = (double*) R_Calloc(internal->dim_vaccination_attempts, double);
+  R_Free(internal->vaccination_attempts_R);
+  internal->vaccination_attempts_R = (double*) R_Calloc(internal->dim_vaccination_attempts_R, double);
+  R_Free(internal->vaccination_attempts_S);
+  internal->vaccination_attempts_S = (double*) R_Calloc(internal->dim_vaccination_attempts_S, double);
   R_Free(internal->vaccination_rate);
   internal->vaccination_rate = (double*) R_Calloc(internal->dim_vaccination_rate, double);
-  R_Free(internal->vaccinations);
-  internal->vaccinations = (double*) R_Calloc(internal->dim_vaccinations, double);
+  R_Free(internal->vaccinations_R);
+  internal->vaccinations_R = (double*) R_Calloc(internal->dim_vaccinations_R, double);
+  R_Free(internal->vaccinations_S);
+  internal->vaccinations_S = (double*) R_Calloc(internal->dim_vaccinations_S, double);
   R_Free(internal->vaccine_waning);
   internal->vaccine_waning = (double*) R_Calloc(internal->dim_vaccine_waning, double);
   internal->dim_birth_rate_1 = internal->dim_tt_birth_rate;
@@ -874,23 +900,16 @@ void deterministic_rhs(deterministic_internal* internal, double t, double * stat
   }
   {
      int i = 2;
-     internal->p_vaccinate[i - 1] = fmin(internal->t_vaccine_doses[i - 1] / (double) (S[i - 1] + M[i - 1]), 0.99990000000000001);
+     internal->p_vaccinate[i - 1] = fmin(internal->t_vaccine_doses[i - 1] / (double) (S[i - 1] + R[i - 1] + M[i - 1]), 0.99990000000000001);
   }
   for (int i = 3; i <= internal->n_age; ++i) {
-    internal->p_vaccinate[i - 1] = fmin(internal->t_vaccine_doses[i - 1] / (double) S[i - 1], 0.99990000000000001);
+    internal->p_vaccinate[i - 1] = fmin(internal->t_vaccine_doses[i - 1] / (double) (S[i - 1] + R[i - 1]), 0.99990000000000001);
   }
   for (int i = 1; i <= internal->dim_S_births; ++i) {
     internal->S_births[i - 1] = S[i - 1] * internal->t_birth_rate[i - 1];
   }
   double births_M = odin_sum1(internal->M_births, 0, internal->dim_M_births);
   double births_S = odin_sum1(internal->S_births, 0, internal->dim_S_births);
-  {
-     int i = 1;
-     dstatedt[internal->dim_S + i - 1] = internal->infections[i - 1] - internal->ageing_R[i - 1] - internal->deaths_R[i - 1] - internal->natural_waning[i - 1];
-  }
-  for (int i = 2; i <= internal->n_age; ++i) {
-    dstatedt[internal->dim_S + i - 1] = internal->infections[i - 1] + internal->ageing_R[i - 1 - 1] - internal->ageing_R[i - 1] - internal->deaths_R[i - 1] - internal->natural_waning[i - 1];
-  }
   for (int i = 1; i <= internal->dim_vaccination_rate; ++i) {
     internal->vaccination_rate[i - 1] = -(log(1 - internal->p_vaccinate[i - 1]));
   }
@@ -902,24 +921,41 @@ void deterministic_rhs(deterministic_internal* internal, double t, double * stat
      int i = 2;
      dstatedt[0 + i - 1] = loses_maternal + internal->ageing_S[i - 1 - 1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
   }
-  for (int i = 3; i <= internal->n_age; ++i) {
+  {
+     int i = 3;
+     dstatedt[0 + i - 1] = internal->ageing_S[i - 1 - 1] + internal->ageing_M[1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
+  }
+  for (int i = 4; i <= internal->n_age; ++i) {
     dstatedt[0 + i - 1] = internal->ageing_S[i - 1 - 1] + internal->natural_waning[i - 1] + internal->vaccine_waning[i - 1] - internal->ageing_S[i - 1] - internal->infections[i - 1] - internal->deaths_S[i - 1];
   }
-  double maternal_vaccination_attempts = internal->vaccination_rate[1] * M[1];
-  for (int i = 1; i <= internal->dim_vaccination_attempts; ++i) {
-    internal->vaccination_attempts[i - 1] = internal->vaccination_rate[i - 1] * S[i - 1];
+  double vaccination_attempts_M = internal->vaccination_rate[1] * M[1];
+  for (int i = 1; i <= internal->dim_vaccination_attempts_R; ++i) {
+    internal->vaccination_attempts_R[i - 1] = internal->vaccination_rate[i - 1] * R[i - 1];
   }
-  double maternal_vaccinations = maternal_vaccination_attempts * internal->vaccine_efficacy;
-  for (int i = 1; i <= internal->dim_vaccinations; ++i) {
-    internal->vaccinations[i - 1] = internal->vaccination_attempts[i - 1] * internal->vaccine_efficacy;
+  for (int i = 1; i <= internal->dim_vaccination_attempts_S; ++i) {
+    internal->vaccination_attempts_S[i - 1] = internal->vaccination_rate[i - 1] * S[i - 1];
+  }
+  double vaccinations_M = vaccination_attempts_M * internal->vaccine_efficacy;
+  for (int i = 1; i <= internal->dim_vaccinations_R; ++i) {
+    internal->vaccinations_R[i - 1] = internal->vaccination_attempts_R[i - 1] * internal->vaccine_efficacy;
+  }
+  for (int i = 1; i <= internal->dim_vaccinations_S; ++i) {
+    internal->vaccinations_S[i - 1] = internal->vaccination_attempts_S[i - 1] * internal->vaccine_efficacy;
   }
   {
      int i = 1;
-     dstatedt[internal->offset_variable_M + i - 1] = births_M + internal->vaccine_waning[0] - internal->ageing_M[0] - internal->deaths_M[0];
+     dstatedt[internal->offset_variable_M + i - 1] = births_M - internal->ageing_M[0] - internal->deaths_M[0];
   }
   {
      int i = 2;
-     dstatedt[internal->offset_variable_M + i - 1] = internal->ageing_M[0] + maternal_vaccinations - internal->ageing_M[1] - internal->deaths_M[1] - loses_maternal;
+     dstatedt[internal->offset_variable_M + i - 1] = internal->ageing_M[0] + vaccinations_M - internal->ageing_M[1] - internal->deaths_M[1] - loses_maternal;
+  }
+  {
+     int i = 1;
+     dstatedt[internal->dim_S + i - 1] = internal->infections[i - 1] - internal->ageing_R[i - 1] - internal->deaths_R[i - 1] - internal->natural_waning[i - 1];
+  }
+  for (int i = 2; i <= internal->n_age; ++i) {
+    dstatedt[internal->dim_S + i - 1] = internal->infections[i - 1] + internal->ageing_R[i - 1 - 1] - internal->vaccinations_R[i - 1] - internal->ageing_R[i - 1] - internal->deaths_R[i - 1] - internal->natural_waning[i - 1];
   }
   {
      int i = 1;
@@ -927,22 +963,22 @@ void deterministic_rhs(deterministic_internal* internal, double t, double * stat
   }
   {
      int i = 2;
-     dstatedt[internal->offset_variable_V + i - 1] = internal->vaccinations[i - 1] + maternal_vaccinations + internal->ageing_V[i - 1 - 1] - internal->ageing_V[i - 1] - internal->deaths_V[i - 1] - internal->vaccine_waning[i - 1];
+     dstatedt[internal->offset_variable_V + i - 1] = internal->vaccinations_S[i - 1] + internal->vaccinations_R[i - 1] + vaccinations_M + internal->ageing_V[i - 1 - 1] - internal->ageing_V[i - 1] - internal->deaths_V[i - 1] - internal->vaccine_waning[i - 1];
   }
   for (int i = 3; i <= internal->n_age; ++i) {
-    dstatedt[internal->offset_variable_V + i - 1] = internal->vaccinations[i - 1] + internal->ageing_V[i - 1 - 1] - internal->ageing_V[i - 1] - internal->deaths_V[i - 1] - internal->vaccine_waning[i - 1];
+    dstatedt[internal->offset_variable_V + i - 1] = internal->vaccinations_S[i - 1] + internal->vaccinations_R[i - 1] + internal->ageing_V[i - 1 - 1] - internal->ageing_V[i - 1] - internal->deaths_V[i - 1] - internal->vaccine_waning[i - 1];
   }
   if (output) {
     {
        int i = 1;
-       internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts[0];
+       internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts_S[0] + internal->vaccination_attempts_R[0];
     }
     {
        int i = 2;
-       internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts[1] + maternal_vaccination_attempts;
+       internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts_S[1] + internal->vaccination_attempts_R[1] + vaccination_attempts_M;
     }
     for (int i = 3; i <= internal->n_age; ++i) {
-      internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts[i - 1];
+      internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts_S[i - 1] + internal->vaccination_attempts_R[i - 1];
     }
     for (int i = 1; i <= internal->dim_vaccination_doses; ++i) {
       output[0 + i - 1] = internal->total_vaccine_doses[i - 1];
@@ -958,6 +994,7 @@ void deterministic_rhs_desolve(int * neq, double * t, double * state, double * d
 void deterministic_output_dde(size_t n_eq, double t, double * state, size_t n_output, double * output, void * internal_p) {
   deterministic_internal *internal = (deterministic_internal*) internal_p;
   double * S = state + 0;
+  double * R = state + internal->dim_S;
   double * M = state + internal->offset_variable_M;
   cinterpolate_eval(t, internal->interpolate_t_vaccine_doses, internal->t_vaccine_doses);
   {
@@ -966,28 +1003,31 @@ void deterministic_output_dde(size_t n_eq, double t, double * state, size_t n_ou
   }
   {
      int i = 2;
-     internal->p_vaccinate[i - 1] = fmin(internal->t_vaccine_doses[i - 1] / (double) (S[i - 1] + M[i - 1]), 0.99990000000000001);
+     internal->p_vaccinate[i - 1] = fmin(internal->t_vaccine_doses[i - 1] / (double) (S[i - 1] + R[i - 1] + M[i - 1]), 0.99990000000000001);
   }
   for (int i = 3; i <= internal->n_age; ++i) {
-    internal->p_vaccinate[i - 1] = fmin(internal->t_vaccine_doses[i - 1] / (double) S[i - 1], 0.99990000000000001);
+    internal->p_vaccinate[i - 1] = fmin(internal->t_vaccine_doses[i - 1] / (double) (S[i - 1] + R[i - 1]), 0.99990000000000001);
   }
   for (int i = 1; i <= internal->dim_vaccination_rate; ++i) {
     internal->vaccination_rate[i - 1] = -(log(1 - internal->p_vaccinate[i - 1]));
   }
-  double maternal_vaccination_attempts = internal->vaccination_rate[1] * M[1];
-  for (int i = 1; i <= internal->dim_vaccination_attempts; ++i) {
-    internal->vaccination_attempts[i - 1] = internal->vaccination_rate[i - 1] * S[i - 1];
+  double vaccination_attempts_M = internal->vaccination_rate[1] * M[1];
+  for (int i = 1; i <= internal->dim_vaccination_attempts_R; ++i) {
+    internal->vaccination_attempts_R[i - 1] = internal->vaccination_rate[i - 1] * R[i - 1];
+  }
+  for (int i = 1; i <= internal->dim_vaccination_attempts_S; ++i) {
+    internal->vaccination_attempts_S[i - 1] = internal->vaccination_rate[i - 1] * S[i - 1];
   }
   {
      int i = 1;
-     internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts[0];
+     internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts_S[0] + internal->vaccination_attempts_R[0];
   }
   {
      int i = 2;
-     internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts[1] + maternal_vaccination_attempts;
+     internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts_S[1] + internal->vaccination_attempts_R[1] + vaccination_attempts_M;
   }
   for (int i = 3; i <= internal->n_age; ++i) {
-    internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts[i - 1];
+    internal->total_vaccine_doses[i - 1] = internal->vaccination_attempts_S[i - 1] + internal->vaccination_attempts_R[i - 1];
   }
   for (int i = 1; i <= internal->dim_vaccination_doses; ++i) {
     output[0 + i - 1] = internal->total_vaccine_doses[i - 1];
