@@ -34,14 +34,14 @@ setMethod(
             Population = c("S", "R", "M", "V")
         )
         #convert output to correct format
-        n_age <- output$parameters$n_age
-        reformatted_output <- as.data.frame(output$output) %>%
+        n_age <- output@parameters$n_age
+        reformatted_output <- as.data.frame(output@output) %>%
             tidyr::pivot_longer(cols = !t, names_to = "raw_compartment", values_to = "value") %>%
             dplyr::mutate(
                 age_group = as.numeric(stringr::str_extract(.data$raw_compartment, "([0-9]+)")),
                 compartment = stringr::str_replace(.data$raw_compartment, "[0-9\\[\\]]+", "")
             ) %>%
-            dplyr::select(!.data$raw_compartment) %>%
+            dplyr::select(!"raw_compartment") %>%
             dplyr::group_by(.data$t, .data$age_group)
 
         #create data frame

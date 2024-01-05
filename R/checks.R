@@ -54,6 +54,23 @@ check_format_age_group_par <- function(par, tt_par, n_age) {
         }
     }
 }
+#' Check the format of age_group_par no tt
+#' @noRd
+check_format_age_group_par_no_tt <- function(par, n_age) {
+    par_name <- deparse(substitute(par))
+    if (!is.numeric(par)) {
+        stop(paste(par_name, "must be numeric"))
+    }
+    if (any(par < 0)) {
+        stop(paste(par_name, "must be positive"))
+    }
+    if (!is.vector(par)) {
+        stop(paste(par_name, "must be a vector"))
+    }
+    if (length(par) != n_age) {
+        stop(paste(par_name, "must have the same number of entries as n_age"))
+    }
+}
 #' Check the format of tt_par
 #' @noRd
 check_format_tt <- function(tt_par, t) {

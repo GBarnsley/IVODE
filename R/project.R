@@ -57,13 +57,33 @@ collate_parameters <- function(
 #' Convience function to drop the first row of a projection
 #' @noRd
 drop_first_row_output <- function(object){
-    object$output <- object$output[-1, ]
+    object@output <- object@output[-1, ]
     object
 }
 
 #' Function to project immunity using point estimates of the parameters
 #' 
 #' Runs multiple models for each vaccine type (determined by the first dimension of relevant parameters
+#' @param type Type of model to run
+#' @param t_projection_starts Time to start projections
+#' @param t_projection_ends Time to end projections
+#' @param age_group_sizes Vector of age group sizes
+#' @param death_rates Vector of death rates
+#' @param tt_death_rates Vector of time varying death rates
+#' @param birth_rates Vector of birth rates
+#' @param tt_birth_rates Vector of time varying birth rates
+#' @param duration_of_maternal_immunity Duration of maternal immunity
+#' @param additional_parameters List of additional parameters,default NULL
+#' @param vaccine_names Vector of vaccine names
+#' @param force_of_infection list of named vectors of force of infection
+#' @param tt_force_of_infection list of named vectors of time varying force of infection
+#' @param vaccine_efficacy list of named vectors of vaccine efficacy
+#' @param vaccine_doses list of named vectors of vaccine doses
+#' @param tt_vaccine_doses list of named vectors of time varying vaccine doses
+#' @param duration_of_immunity list of named vectors of duration of immunity
+#' @param S_0 list of named vectors of initial susceptibles
+#' @param R_0 list of named vectors of initial recovered
+#' @param M_0 list of named vectors of initial maternal immunity
 #' 
 #' @export
 project_point_estimate <- function(
@@ -76,6 +96,7 @@ project_point_estimate <- function(
     birth_rates,
     tt_birth_rates = NULL,
     duration_of_maternal_immunity,
+    additional_parameters = NULL,
     vaccine_names,
     force_of_infection,
     tt_force_of_infection = NULL,
@@ -152,7 +173,7 @@ project_point_estimate <- function(
         dplyr::filter(.data$compartment == "Population") %>%
         dplyr::arrange(.data$t) %>%
         dplyr::group_by(.data$t) %>%
-        dplyr::mutate(value = as.integer(round(value/max(value), digits = 4) * 10^4)) %>%
+        dplyr::mutate(value = as.integer(round(.data$value/max(.data$value), digits = 4) * 10^4)) %>%
         dplyr::select(!c("compartment", "vaccine_type")) %>%
         unique() %>%
         dplyr::filter(dplyr::n() > 1)
@@ -161,7 +182,7 @@ project_point_estimate <- function(
         stop("Warning: Population is not constant across vaccine types, please check previous message this could be due to large numbers")
     } else {
         projections <- projections %>%
-            tidyr::pivot_wider(names_from = compartment, values_from = value)
+            tidyr::pivot_wider(names_from = "compartment", values_from = "value")
     }
 
     list(

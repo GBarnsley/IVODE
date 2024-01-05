@@ -14,6 +14,7 @@ project_point_estimate(
   birth_rates,
   tt_birth_rates = NULL,
   duration_of_maternal_immunity,
+  additional_parameters = NULL,
   vaccine_names,
   force_of_infection,
   tt_force_of_infection = NULL,
@@ -25,6 +26,47 @@ project_point_estimate(
   R_0,
   M_0
 )
+}
+\arguments{
+\item{type}{Type of model to run}
+
+\item{t_projection_starts}{Time to start projections}
+
+\item{t_projection_ends}{Time to end projections}
+
+\item{age_group_sizes}{Vector of age group sizes}
+
+\item{death_rates}{Vector of death rates}
+
+\item{tt_death_rates}{Vector of time varying death rates}
+
+\item{birth_rates}{Vector of birth rates}
+
+\item{tt_birth_rates}{Vector of time varying birth rates}
+
+\item{duration_of_maternal_immunity}{Duration of maternal immunity}
+
+\item{additional_parameters}{List of additional parameters,default NULL}
+
+\item{vaccine_names}{Vector of vaccine names}
+
+\item{force_of_infection}{list of named vectors of force of infection}
+
+\item{tt_force_of_infection}{list of named vectors of time varying force of infection}
+
+\item{vaccine_efficacy}{list of named vectors of vaccine efficacy}
+
+\item{vaccine_doses}{list of named vectors of vaccine doses}
+
+\item{tt_vaccine_doses}{list of named vectors of time varying vaccine doses}
+
+\item{duration_of_immunity}{list of named vectors of duration of immunity}
+
+\item{S_0}{list of named vectors of initial susceptibles}
+
+\item{R_0}{list of named vectors of initial recovered}
+
+\item{M_0}{list of named vectors of initial maternal immunity}
 }
 \description{
 Runs multiple models for each vaccine type (determined by the first dimension of relevant parameters

@@ -15,5 +15,7 @@
 #' @importFrom methods signature
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
+#' @importFrom methods setClass
+#' @importFrom methods new
 NULL
 #> NULL

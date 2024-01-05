@@ -21,7 +21,8 @@ simulate(
   duration_of_maternal_immunity,
   S_0,
   R_0,
-  M_0
+  M_0,
+  additional_parameters = NULL
 )
 }
 \arguments{
@@ -58,6 +59,8 @@ simulate(
 \item{R_0}{Initial recovered population}
 
 \item{M_0}{Initial maternal immunity population}
+
+\item{additional_parameters}{List of additional parameters}
 }
 \value{
 output array of results

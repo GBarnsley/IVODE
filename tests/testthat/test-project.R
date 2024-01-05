@@ -30,6 +30,7 @@ test_that("deterministic point estimate projection", {
     birth_rates,
     tt_birth_rates,
     duration_of_maternal_immunity,
+    additional_parameters = NULL,
     vaccine_names,
     force_of_infection,
     tt_force_of_infection,

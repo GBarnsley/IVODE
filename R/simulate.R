@@ -17,6 +17,7 @@
 #' @param S_0 Initial susceptible population
 #' @param R_0 Initial recovered population
 #' @param M_0 Initial maternal immunity population
+#' @param additional_parameters List of additional parameters
 #' @return output array of results
 #' @export
 simulate <- function(
@@ -36,7 +37,8 @@ simulate <- function(
     duration_of_maternal_immunity,
     S_0,
     R_0,
-    M_0
+    M_0,
+    additional_parameters = NULL
     ) {
     
     type_class <- call_type(type)
@@ -47,13 +49,13 @@ simulate <- function(
 
     n_age <- length(age_group_sizes) + 1
 
-    check_format_age_group_par(death_rates, tt_death_rates, n_age)
+    #check_format_age_group_par(death_rates, tt_death_rates, n_age) #need to OOP this
     check_format_tt(tt_death_rates, t)
 
-    check_format_age_group_par(birth_rates, tt_birth_rates, n_age)
+    #check_format_age_group_par(birth_rates, tt_birth_rates, n_age) #need to OOP this
     check_format_tt(tt_birth_rates, t)
 
-    check_format_age_group_par(force_of_infection, tt_force_of_infection, n_age)
+    #check_format_age_group_par(force_of_infection, tt_force_of_infection, n_age) #oop this
     check_format_tt(tt_force_of_infection, t)
 
     check_format_percentage(vaccine_efficacy)
@@ -71,34 +73,36 @@ simulate <- function(
     #format variables for model
     pars_list <- list(n_age = n_age)
 
-    pars_list <- format_age_rates(type, pars_list, age_group_sizes)
+    pars_list <- format_age_rates(type_class, pars_list, age_group_sizes)
 
-    pars_list <- format_age_group_par(type, pars_list, death_rates, tt_death_rates, "death_rate")
+    pars_list <- format_death_rate(type_class, pars_list, death_rates, tt_death_rates)
 
-    pars_list <- format_age_group_par(type, pars_list, birth_rates, tt_birth_rates, "birth_rate")
+    pars_list <- format_birth_rate(type_class, pars_list, birth_rates, tt_birth_rates)
 
-    pars_list <- format_age_group_par(type, pars_list, force_of_infection, tt_force_of_infection, "foi")
+    pars_list <- format_foi(type_class, pars_list, force_of_infection, tt_force_of_infection)
 
-    pars_list <- format_vaccine_efficacy(type, pars_list, vaccine_efficacy)
+    pars_list <- format_vaccine_efficacy(type_class, pars_list, vaccine_efficacy)
     
-    pars_list <- format_waning(type, pars_list, duration_of_immunity)
+    pars_list <- format_waning(type_class, pars_list, duration_of_immunity)
 
-    pars_list <- format_maternal_waning(type, pars_list, duration_of_maternal_immunity)
+    pars_list <- format_maternal_waning(type_class, pars_list, duration_of_maternal_immunity)
 
-    pars_list <- format_initial_conditions(type, pars_list, S_0, "S")
+    pars_list <- format_initial_conditions(type_class, pars_list, S_0, "S")
 
-    pars_list <- format_initial_conditions(type, pars_list, R_0, "R")
+    pars_list <- format_initial_conditions(type_class, pars_list, R_0, "R")
     
-    pars_list <- format_initial_conditions(type, pars_list, M_0, "M")
+    pars_list <- format_initial_conditions(type_class, pars_list, M_0, "M")
 
-    pars_list <- format_vaccine_doses(type, pars_list, vaccine_doses, tt_vaccine_doses)
+    pars_list <- format_vaccine_doses(type_class, pars_list, vaccine_doses, tt_vaccine_doses)
     
-    type_class$parameters <- pars_list
+    pars_list <- format_additional(type_class, pars_list, additional_parameters)
 
-    model_instance <- do.call(type_class$model_function, type_class$parameters)
+    type_class@parameters <- pars_list
+
+    model_instance <- do.call(type_class@model_function, type_class@parameters)
     output <- model_instance$run(t)
 
-    type_class$output <- output
+    type_class@output <- output
     
     type_class
 }
