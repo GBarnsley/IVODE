@@ -15,8 +15,8 @@ simulate(
   force_of_infection,
   tt_force_of_infection = NULL,
   vaccine_efficacy,
-  vaccine_doses,
-  tt_vaccine_doses = NULL,
+  vaccinations,
+  tt_vaccinations = NULL,
   duration_of_immunity,
   duration_of_maternal_immunity,
   S_0,
@@ -46,9 +46,9 @@ simulate(
 
 \item{vaccine_efficacy}{Efficacy of vaccine}
 
-\item{vaccine_doses}{Doses of vaccine given each day}
+\item{vaccinations}{Doses or rates of vaccine given each day}
 
-\item{tt_vaccine_doses}{Times at which vaccination rate changes}
+\item{tt_vaccinations}{Times at which vaccination rate changes}
 
 \item{duration_of_immunity}{Duration of protection (in days) from vaccines and natural immunity}
 

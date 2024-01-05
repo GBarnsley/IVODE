@@ -10,8 +10,8 @@
 #' @param force_of_infection Force of infection for each age group
 #' @param tt_force_of_infection Times at which force of infection changes
 #' @param vaccine_efficacy Efficacy of vaccine
-#' @param vaccine_doses Doses of vaccine given each day
-#' @param tt_vaccine_doses Times at which vaccination rate changes
+#' @param vaccinations Doses or rates of vaccine given each day
+#' @param tt_vaccinations Times at which vaccination rate changes
 #' @param duration_of_immunity Duration of protection (in days) from vaccines and natural immunity
 #' @param duration_of_maternal_immunity Duration of maternal immunity
 #' @param S_0 Initial susceptible population
@@ -31,8 +31,8 @@ simulate <- function(
     force_of_infection,
     tt_force_of_infection = NULL,
     vaccine_efficacy,
-    vaccine_doses,
-    tt_vaccine_doses = NULL,
+    vaccinations,
+    tt_vaccinations = NULL,
     duration_of_immunity,
     duration_of_maternal_immunity,
     S_0,
@@ -60,8 +60,8 @@ simulate <- function(
 
     check_format_percentage(vaccine_efficacy)
 
-    check_format_age_group_par(vaccine_doses, tt_vaccine_doses, n_age)
-    check_format_tt(tt_vaccine_doses, t)
+    #check_format_age_group_par(vaccinations, tt_vaccinations, n_age)
+    check_format_tt(tt_vaccinations, t)
 
     check_duration(duration_of_immunity)
     check_duration(duration_of_maternal_immunity)
@@ -93,7 +93,7 @@ simulate <- function(
     
     pars_list <- format_initial_conditions(type_class, pars_list, M_0, "M")
 
-    pars_list <- format_vaccine_doses(type_class, pars_list, vaccine_doses, tt_vaccine_doses)
+    pars_list <- format_vaccinations(type_class, pars_list, vaccinations, tt_vaccinations)
     
     pars_list <- format_additional(type_class, pars_list, additional_parameters)
 

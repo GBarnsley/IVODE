@@ -19,8 +19,8 @@ project_point_estimate(
   force_of_infection,
   tt_force_of_infection = NULL,
   vaccine_efficacy,
-  vaccine_doses,
-  tt_vaccine_doses = NULL,
+  vaccinations,
+  tt_vaccinations = NULL,
   duration_of_immunity,
   S_0,
   R_0,
@@ -56,9 +56,9 @@ project_point_estimate(
 
 \item{vaccine_efficacy}{list of named vectors of vaccine efficacy}
 
-\item{vaccine_doses}{list of named vectors of vaccine doses}
+\item{vaccinations}{list of named vectors of vaccine dose/rate parameters}
 
-\item{tt_vaccine_doses}{list of named vectors of time varying vaccine doses}
+\item{tt_vaccinations}{list of named vectors of time varying vaccine doses}
 
 \item{duration_of_immunity}{list of named vectors of duration of immunity}
 

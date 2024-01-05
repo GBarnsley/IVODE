@@ -10,8 +10,8 @@ test_that("simple deterministic", {
   force_of_infection <- c(0, 0, 0, 0, 0)
   tt_force_of_infection <- NULL
   vaccine_efficacy <- 0.5
-  vaccine_doses <- c(0, 100, 0, 0, 0)
-  tt_vaccine_doses <- NULL
+  vaccinations <- c(0, 100, 0, 0, 0)
+  tt_vaccinations <- NULL
   duration_of_immunity <- 365 * 5
   duration_of_maternal_immunity <- 364 / 2
   M_0 <- rep(0, 2)
@@ -29,8 +29,8 @@ test_that("simple deterministic", {
     force_of_infection,
     tt_force_of_infection,
     vaccine_efficacy,
-    vaccine_doses,
-    tt_vaccine_doses,
+    vaccinations,
+    tt_vaccinations,
     duration_of_immunity,
     duration_of_maternal_immunity,
     S_0,
@@ -55,8 +55,8 @@ test_that("simple deterministic", {
     force_of_infection,
     tt_force_of_infection,
     vaccine_efficacy,
-    vaccine_doses,
-    tt_vaccine_doses,
+    vaccinations,
+    tt_vaccinations,
     duration_of_immunity,
     duration_of_maternal_immunity,
     S_0,
@@ -66,7 +66,7 @@ test_that("simple deterministic", {
   vaccine_immune <- format_output(res, "Immune(Vaccine)", reduce_age = TRUE) %>%
     dplyr::pull(value) %>%
     max()
-  expect_true(abs(sum(vaccine_doses) * max(t) * vaccine_efficacy - vaccine_immune)/vaccine_immune < 0.01)
+  expect_true(abs(sum(vaccinations) * max(t) * vaccine_efficacy - vaccine_immune)/vaccine_immune < 0.01)
 })
 
 test_that("gaza deterministic", {
@@ -81,8 +81,9 @@ test_that("gaza deterministic", {
   force_of_infection <- 0
   tt_force_of_infection <- NULL
   vaccine_efficacy <- 0.5
-  vaccine_doses <- c(0, 100, 0, 0, 0)
-  tt_vaccine_doses <- NULL
+  coverage <- 0.50
+  vaccinations <- c(0, -(log(1-coverage)/min(c(max(t), age_group_sizes[2]))), 0, 0, 0)
+  tt_vaccinations <- NULL
   duration_of_immunity <- 365 * 5
   duration_of_maternal_immunity <- 364 / 2
   M_0 <- rep(0, 2)
@@ -103,8 +104,8 @@ test_that("gaza deterministic", {
     force_of_infection,
     tt_force_of_infection,
     vaccine_efficacy,
-    vaccine_doses,
-    tt_vaccine_doses,
+    vaccinations,
+    tt_vaccinations,
     duration_of_immunity,
     duration_of_maternal_immunity,
     S_0,
@@ -117,8 +118,10 @@ test_that("gaza deterministic", {
   # all postive (with lower bound of 0.1)
   expect_true(all(res@output >= -0.1))
   #number of vaccinated people should roughly be doses * time * efficacy (no waning)
-  duration_of_immunity <- 365 * 100000000
-  death_rates <- 0
+  t <- c(0, 365 * 20)
+  duration_of_immunity <- Inf
+  #not sure this makes sense
+  vaccinations <- -log(1 - coverage) / c(age_group_sizes, 1/death_rates)
   res <- simulate(
     type,
     t,
@@ -130,8 +133,8 @@ test_that("gaza deterministic", {
     force_of_infection,
     tt_force_of_infection,
     vaccine_efficacy,
-    vaccine_doses,
-    tt_vaccine_doses,
+    vaccinations,
+    tt_vaccinations,
     duration_of_immunity,
     duration_of_maternal_immunity,
     S_0,
@@ -139,8 +142,13 @@ test_that("gaza deterministic", {
     M_0,
     additional_parameters
   )
-  vaccine_immune <- format_output(res, "Immune(Vaccine)", reduce_age = TRUE) %>%
+  vaccine_immune <- format_output(res, "Immune(Vaccine)", reduce_age = FALSE) %>%
+    dplyr::filter(age_group > 1 & t == max(t)) %>%
     dplyr::pull(value) %>%
-    max()
-  expect_true(abs(sum(vaccine_doses) * max(t) * vaccine_efficacy - vaccine_immune)/vaccine_immune < 0.01)
+    sum()
+  pop <- format_output(res, "Population", reduce_age = FALSE) %>%
+    dplyr::filter(age_group > 1 & t == max(t)) %>%
+    dplyr::pull(value) %>%
+    sum()
+  expect_true(abs((vaccine_efficacy * coverage - (vaccine_immune/pop))/(vaccine_efficacy * coverage)) < 0.05)
 })

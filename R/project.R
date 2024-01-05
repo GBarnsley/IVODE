@@ -5,8 +5,8 @@ collate_parameters <- function(
     force_of_infection,
     tt_force_of_infection,
     vaccine_efficacy,
-    vaccine_doses,
-    tt_vaccine_doses,
+    vaccinations,
+    tt_vaccinations,
     duration_of_immunity,
     S_0,
     R_0,
@@ -24,8 +24,8 @@ collate_parameters <- function(
     check_list_format(force_of_infection, vaccine_names)
     check_list_format(tt_force_of_infection, vaccine_names)
     check_list_format(vaccine_efficacy, vaccine_names)
-    check_list_format(vaccine_doses, vaccine_names)
-    check_list_format(tt_vaccine_doses, vaccine_names)
+    check_list_format(vaccinations, vaccine_names)
+    check_list_format(tt_vaccinations, vaccine_names)
     check_list_format(duration_of_immunity, vaccine_names)
     check_list_format(S_0, vaccine_names)
     check_list_format(R_0, vaccine_names)
@@ -37,8 +37,8 @@ collate_parameters <- function(
             force_of_infection = force_of_infection[[.x]],
             tt_force_of_infection = tt_force_of_infection[[.x]],
             vaccine_efficacy = vaccine_efficacy[[.x]],
-            vaccine_doses = vaccine_doses[[.x]],
-            tt_vaccine_doses = tt_vaccine_doses[[.x]],
+            vaccinations = vaccinations[[.x]],
+            tt_vaccinations = tt_vaccinations[[.x]],
             duration_of_immunity = duration_of_immunity[[.x]],
             S_0 = S_0[[.x]],
             R_0 = R_0[[.x]],
@@ -78,8 +78,8 @@ drop_first_row_output <- function(object){
 #' @param force_of_infection list of named vectors of force of infection
 #' @param tt_force_of_infection list of named vectors of time varying force of infection
 #' @param vaccine_efficacy list of named vectors of vaccine efficacy
-#' @param vaccine_doses list of named vectors of vaccine doses
-#' @param tt_vaccine_doses list of named vectors of time varying vaccine doses
+#' @param vaccinations list of named vectors of vaccine dose/rate parameters
+#' @param tt_vaccinations list of named vectors of time varying vaccine doses
 #' @param duration_of_immunity list of named vectors of duration of immunity
 #' @param S_0 list of named vectors of initial susceptibles
 #' @param R_0 list of named vectors of initial recovered
@@ -101,8 +101,8 @@ project_point_estimate <- function(
     force_of_infection,
     tt_force_of_infection = NULL,
     vaccine_efficacy,
-    vaccine_doses,
-    tt_vaccine_doses = NULL,
+    vaccinations,
+    tt_vaccinations = NULL,
     duration_of_immunity,
     S_0,
     R_0,
@@ -125,8 +125,8 @@ project_point_estimate <- function(
         force_of_infection = rep(0, n_age),
         tt_force_of_infection = NULL,
         vaccine_efficacy = 0,
-        vaccine_doses = rep(0, n_age),
-        tt_vaccine_doses = NULL,
+        vaccinations = rep(0, n_age),
+        tt_vaccinations = NULL,
         duration_of_immunity = 100,
         duration_of_maternal_immunity = duration_of_maternal_immunity,
         S_0 = total_population,
@@ -144,8 +144,8 @@ project_point_estimate <- function(
         force_of_infection,
         tt_force_of_infection = tt_force_of_infection,
         vaccine_efficacy = vaccine_efficacy,
-        vaccine_doses = vaccine_doses,
-        tt_vaccine_doses = tt_vaccine_doses,
+        vaccinations = vaccinations,
+        tt_vaccinations = tt_vaccinations,
         duration_of_immunity = duration_of_immunity,
         duration_of_maternal_immunity = duration_of_maternal_immunity,
         type = type,

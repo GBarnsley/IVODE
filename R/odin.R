@@ -16,14 +16,13 @@ deterministic_gz_ <- R6::R6Class(
     cfuns = list(
       rhs_dde = "deterministic_gz_rhs_dde",
       rhs_desolve = "deterministic_gz_rhs_desolve",
-      initmod_desolve = "deterministic_gz_initmod_desolve",
-      output_dde = "deterministic_gz_output_dde"),
+      initmod_desolve = "deterministic_gz_initmod_desolve"),
     dll = "IVODE",
     user = c("age_rate", "child_bearing", "crude_birth_rate",
              "crude_death_rate", "crude_foi", "M_0", "maternal_waning",
              "n_age", "prop_death", "R_0", "S_0", "tt_crude_birth_rate",
-             "tt_crude_death_rate", "tt_crude_foi", "tt_vaccine_doses",
-             "vaccine_doses", "vaccine_efficacy", "waning"),
+             "tt_crude_death_rate", "tt_crude_foi", "tt_vaccination_rate",
+             "vaccination_rate", "vaccine_efficacy", "waning"),
 
     ## This is never called, but is used to ensure that R finds our
     ## symbols that we will use from the package; without this they
@@ -34,7 +33,6 @@ deterministic_gz_ <- R6::R6Class(
         .C("deterministic_gz_rhs_dde", package = "IVODE")
         .C("deterministic_gz_rhs_desolve", package = "IVODE")
         .C("deterministic_gz_initmod_desolve", package = "IVODE")
-        .C("deterministic_gz_output_dde", package = "IVODE")
       }
     },
 

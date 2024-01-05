@@ -40,14 +40,14 @@ t_crude_foi <- interpolate(tt_crude_foi, crude_foi, "constant")
 
 vaccine_efficacy <- user()
 
-tt_vaccine_doses[] <- user()
-dim(tt_vaccine_doses) <- user()
+tt_vaccination_rate[] <- user()
+dim(tt_vaccination_rate) <- user()
 
-vaccine_doses[,] <- user()
-dim(vaccine_doses) <- c(length(tt_vaccine_doses), n_age)
+vaccination_rate[,] <- user()
+dim(vaccination_rate) <- c(length(tt_vaccination_rate), n_age)
 
-t_vaccine_doses[] <- interpolate(tt_vaccine_doses, vaccine_doses, "constant")
-dim(t_vaccine_doses) <- n_age
+t_vaccination_rate[] <- interpolate(tt_vaccination_rate, vaccination_rate, "constant")
+dim(t_vaccination_rate) <- n_age
 
 M_0[] <- user()
 dim(M_0) <- 2
@@ -122,33 +122,13 @@ ageing_M[] <- age_rate[i] * M[i]
 dim(ageing_M) <- 2
 
 #todo add check against non all or nothing
-#vaccine dose calculations (with a numerical limit)
-p_vaccinate[1] <-  0
-p_vaccinate[2] <- min(t_vaccine_doses[i] / (S[i] + R[i] + M[i]), 0.9999)
-p_vaccinate[3:n_age] <- min(t_vaccine_doses[i] / (S[i] + R[i]), 0.9999)
-dim(p_vaccinate) <- n_age
-
-#output(temp_p_vaccinate[]) <- p_vaccinate[i]
-#dim(temp_p_vaccinate) <- n_age
-
-
-vaccination_rate[] <- -log(1 - p_vaccinate[i])
-dim(vaccination_rate) <- n_age
-
-vaccination_attempts_S[] <- vaccination_rate[i] * S[i]
-dim(vaccination_attempts_S) <- n_age
-
-vaccinations_S[] <- vaccination_attempts_S[i] * vaccine_efficacy
+vaccinations_S[] <- t_vaccination_rate[i] * S[i] * vaccine_efficacy
 dim(vaccinations_S) <- n_age
 
-vaccination_attempts_R[] <- vaccination_rate[i] * R[i]
-dim(vaccination_attempts_R) <- n_age
-
-vaccinations_R[] <- vaccination_attempts_R[i] * vaccine_efficacy
+vaccinations_R[] <- t_vaccination_rate[i] * R[i] * vaccine_efficacy
 dim(vaccinations_R) <- n_age
 
-vaccination_attempts_M <- vaccination_rate[2] * M[2]
-vaccinations_M <- vaccination_attempts_M * vaccine_efficacy
+vaccinations_M <- t_vaccination_rate[2] * M[2] * vaccine_efficacy
 
 #derivatives
 dim(S) <- n_age
@@ -174,12 +154,5 @@ initial(M[]) <- M_0[i]
 deriv(M[1]) <- births_M - ageing_M[1] - deaths_M[1]
 deriv(M[2]) <- ageing_M[1] - vaccinations_M - ageing_M[2] - deaths_M[2] - loses_maternal
 
-#outputs
-
-total_vaccine_doses[1] <- vaccination_attempts_S[1] + vaccination_attempts_R[1]
-total_vaccine_doses[2] <- vaccination_attempts_S[2] + vaccination_attempts_R[2] + vaccination_attempts_M
-total_vaccine_doses[3:n_age] <- vaccination_attempts_S[i] + vaccination_attempts_R[i]
-dim(total_vaccine_doses) <- n_age
-
-output(vaccination_doses[]) <- total_vaccine_doses[i]
-dim(vaccination_doses) <- n_age
+#output
+#tracking doses doesn't make sense in this formulation

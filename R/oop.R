@@ -272,24 +272,40 @@ setMethod(
 #' Format vaccine doses
 #' @noRd
 setGeneric(
-    "format_vaccine_doses",
-    function(type, pars_list, vaccine_doses, tt_vaccine_doses) {
-        standardGeneric("format_vaccine_doses")
+    "format_vaccinations",
+    function(type, pars_list, vaccinations, tt_vaccinations) {
+        standardGeneric("format_vaccinations")
     }
 )
 #' Default to format vaccine doses
 #' @noRd
 setMethod(
-    "format_vaccine_doses",
+    "format_vaccinations",
     signature(type = "IVODE_model"),
-    function(type, pars_list, vaccine_doses, tt_vaccine_doses) {
-        if (is.null(tt_vaccine_doses)) {
-            tt_vaccine_doses <- 0
+    function(type, pars_list, vaccinations, tt_vaccinations) {
+        if (is.null(tt_vaccinations)) {
+            tt_vaccinations <- 0
             #convert par to matrix
-            vaccine_doses <- matrix(vaccine_doses, nrow = 1)
+            vaccinations <- matrix(vaccinations, nrow = 1)
         }
-        pars_list$vaccine_doses <- vaccine_doses
-        pars_list$tt_vaccine_doses <- tt_vaccine_doses
+        pars_list$vaccine_doses <- vaccinations
+        pars_list$tt_vaccine_doses<- tt_vaccinations
+        return(pars_list)
+    }
+)
+#' Gaza specific
+#' @noRd
+setMethod(
+    "format_vaccinations",
+    signature(type = "deterministic_gz"),
+    function(type, pars_list, vaccinations, tt_vaccinations) {
+        if (is.null(tt_vaccinations)) {
+            tt_vaccinations <- 0
+            #convert par to matrix
+            vaccinations <- matrix(vaccinations, nrow = 1)
+        }
+        pars_list$vaccination_rate <- vaccinations
+        pars_list$tt_vaccination_rate <- tt_vaccinations
         return(pars_list)
     }
 )
