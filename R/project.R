@@ -8,6 +8,7 @@ collate_parameters <- function(
     vaccinations,
     tt_vaccinations,
     duration_of_immunity,
+    additional_parameters,
     S_0,
     R_0,
     M_0,
@@ -50,7 +51,8 @@ collate_parameters <- function(
             tt_death_rates = tt_death_rates,
             birth_rates = birth_rates,
             tt_birth_rates = tt_birth_rates,
-            duration_of_maternal_immunity = duration_of_maternal_immunity
+            duration_of_maternal_immunity = duration_of_maternal_immunity,
+            additional_parameters = additional_parameters
         )
     )
 }
@@ -129,6 +131,7 @@ project_point_estimate <- function(
         tt_vaccinations = NULL,
         duration_of_immunity = 100,
         duration_of_maternal_immunity = duration_of_maternal_immunity,
+        additional_parameters = additional_parameters,
         S_0 = total_population,
         R_0 = rep(0, n_age),
         M_0 = rep(0, 2)
@@ -157,7 +160,8 @@ project_point_estimate <- function(
         tt_birth_rates = tt_birth_rates,
         S_0 = S_0,
         R_0 = R_0,
-        M_0 = M_0
+        M_0 = M_0,
+        additional_parameters = additional_parameters
     )
 
     #now simulate for each vaccine
