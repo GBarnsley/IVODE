@@ -58,7 +58,7 @@ collate_parameters <- function(
 }
 #' Convience function to drop the first row of a projection
 #' @noRd
-drop_first_row_output <- function(object){
+drop_first_row_output <- function(object) {
     object@output <- object@output[-1, ]
     object
 }
@@ -124,7 +124,7 @@ project_point_estimate <- function(
         tt_death_rates = tt_death_rates,
         birth_rates = birth_rates,
         tt_birth_rates = tt_birth_rates,
-        force_of_infection = rep(0, n_age),
+        force_of_infection = 0,
         tt_force_of_infection = NULL,
         vaccine_efficacy = 0,
         vaccinations = rep(0, n_age),
@@ -144,7 +144,7 @@ project_point_estimate <- function(
     #collate parameters
     pars_list <- collate_parameters(
         vaccine_names = vaccine_names,
-        force_of_infection,
+        force_of_infection = force_of_infection,
         tt_force_of_infection = tt_force_of_infection,
         vaccine_efficacy = vaccine_efficacy,
         vaccinations = vaccinations,
@@ -168,7 +168,7 @@ project_point_estimate <- function(
     projections <- purrr::map_dfr(pars_list, ~do.call(simulate, .x) %>%
         drop_first_row_output() %>%
         format_output(
-            c("Immune", "Population"), reduce_age = TRUE
+            c("Immune", "Population"), reduce_age = FALSE
         ), .id = "vaccine_type"
     )
 
@@ -176,6 +176,8 @@ project_point_estimate <- function(
     check_pop <- projections %>%
         dplyr::filter(.data$compartment == "Population") %>%
         dplyr::arrange(.data$t) %>%
+        dplyr::group_by(.data$t, .data$vaccine_type, .data$compartment) %>%
+        dplyr::summarise(value = sum(.data$value), .groups = "drop") %>%
         dplyr::group_by(.data$t) %>%
         dplyr::mutate(value = as.integer(round(.data$value/max(.data$value), digits = 4) * 10^4)) %>%
         dplyr::select(!c("compartment", "vaccine_type")) %>%

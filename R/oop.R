@@ -83,7 +83,7 @@ setMethod(
         if (is.null(tt_age_group_par)) {
             tt_age_group_par <- 0
             #convert par to matrix
-            age_group_par <- matrix(age_group_par, nrow = 1)
+            age_group_par <- matrix(age_group_par, nrow = 1, ncol = pars_list$n_age)
         }
         pars_list[[par_name]] <- age_group_par
         pars_list[[paste0("tt_", par_name)]] <- tt_age_group_par
