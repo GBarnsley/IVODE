@@ -13,6 +13,7 @@ test_that("deterministic point estimate projection", {
   force_of_infection <- list(PCV = c(0, 0, 0, 0, 0), Measles = c(1, 1, 0, 0, 0))
   tt_force_of_infection <- list(PCV = NULL, Measles = NULL)
   vaccine_efficacy <- list(PCV = 0.25, Measles = 0.5)
+  vaccine_efficacy_disease <- list(PCV = 0.25, Measles = 0.5)
   vaccinations <- list(PCV = c(0, 1000, 0, 0, 0), Measles = c(0, 2000, 0, 0, 0))
   tt_vaccinations <- list(PCV = NULL, Measles = NULL)
   duration_of_immunity <- list(PCV = 3*365, Measles = 5*365)
@@ -35,6 +36,7 @@ test_that("deterministic point estimate projection", {
     force_of_infection,
     tt_force_of_infection,
     vaccine_efficacy,
+    vaccine_efficacy_disease,
     vaccinations,
     tt_vaccinations,
     duration_of_immunity,

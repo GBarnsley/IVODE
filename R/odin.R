@@ -21,8 +21,9 @@ deterministic_gz_ <- R6::R6Class(
     user = c("age_rate", "child_bearing", "crude_birth_rate",
              "crude_death_rate", "crude_foi", "M_0", "maternal_waning",
              "n_age", "prop_death", "R_0", "S_0", "tt_crude_birth_rate",
-             "tt_crude_death_rate", "tt_crude_foi", "tt_vaccination_rate",
-             "vaccination_rate", "vaccine_efficacy", "waning"),
+             "tt_crude_death_rate", "tt_crude_foi",
+             "tt_vaccination_coverage", "vaccination_coverage",
+             "vaccination_partial_coverage", "waning"),
 
     ## This is never called, but is used to ensure that R finds our
     ## symbols that we will use from the package; without this they
@@ -147,7 +148,7 @@ deterministic_ <- R6::R6Class(
     user = c("age_rate", "birth_rate", "death_rate", "foi", "M_0",
              "maternal_waning", "n_age", "R_0", "S_0", "tt_birth_rate",
              "tt_death_rate", "tt_foi", "tt_vaccine_doses", "vaccine_doses",
-             "vaccine_efficacy", "waning"),
+             "vaccine_efficacy", "vaccine_efficacy_disease", "waning"),
 
     ## This is never called, but is used to ensure that R finds our
     ## symbols that we will use from the package; without this they

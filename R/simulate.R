@@ -10,6 +10,7 @@
 #' @param force_of_infection Force of infection for each age group
 #' @param tt_force_of_infection Times at which force of infection changes
 #' @param vaccine_efficacy Efficacy of vaccine
+#' @param vaccine_efficacy_disease Efficacy of vaccine against disease, should be the total efficacy not adjusted for protection against infection
 #' @param vaccinations Doses or rates of vaccine given each day
 #' @param tt_vaccinations Times at which vaccination rate changes
 #' @param duration_of_immunity Duration of protection (in days) from vaccines and natural immunity
@@ -31,6 +32,7 @@ simulate <- function(
     force_of_infection,
     tt_force_of_infection = NULL,
     vaccine_efficacy,
+    vaccine_efficacy_disease,
     vaccinations,
     tt_vaccinations = NULL,
     duration_of_immunity,
@@ -60,6 +62,10 @@ simulate <- function(
 
     check_format_percentage(vaccine_efficacy)
 
+    check_format_percentage(vaccine_efficacy_disease)
+
+    check_efficacy_consistency(vaccine_efficacy, vaccine_efficacy_disease)
+
     #check_format_age_group_par(vaccinations, tt_vaccinations, n_age)
     check_format_tt(tt_vaccinations, t)
 
@@ -82,6 +88,8 @@ simulate <- function(
     pars_list <- format_foi(type_class, pars_list, force_of_infection, tt_force_of_infection)
 
     pars_list <- format_vaccine_efficacy(type_class, pars_list, vaccine_efficacy)
+
+    pars_list <- format_vaccine_efficacy_disease(type_class, pars_list, vaccine_efficacy_disease)
     
     pars_list <- format_waning(type_class, pars_list, duration_of_immunity)
 

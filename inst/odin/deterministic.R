@@ -37,6 +37,10 @@ dim(t_foi) <- n_age
 
 vaccine_efficacy <- user()
 
+vaccine_efficacy_disease <- user()
+
+vaccine_efficacy_disease_adjusted <- (vaccine_efficacy_disease - vaccine_efficacy) / (1 - vaccine_efficacy)
+
 tt_vaccine_doses[] <- user()
 dim(tt_vaccine_doses) <- user()
 
@@ -57,7 +61,7 @@ dim(R_0) <- n_age
 
 #tranistions
 
-S_births[] <- S[i] * t_birth_rate[i]
+S_births[] <- (S[i] + VD[i]) * t_birth_rate[i]
 dim(S_births) <- n_age
 
 M_births[] <- (R[i] + V[i]) * t_birth_rate[i]
@@ -73,10 +77,16 @@ dim(natural_waning) <- n_age
 vaccine_waning[] <- waning * V[i]
 dim(vaccine_waning) <- n_age
 
+vaccine_partial_waning[] <- waning * VD[i]
+dim(vaccine_partial_waning) <- n_age
+
 loses_maternal <- maternal_waning * M[2] #only wanes in the last stage
 
 infections[] <- t_foi[i] * S[i]
 dim(infections) <- n_age
+
+infections_VD[] <- t_foi[i] * VD[i]
+dim(infections_VD) <- n_age
 
 deaths_S[] <- t_death_rate[i] * S[i]
 dim(deaths_S) <- n_age
@@ -86,6 +96,9 @@ dim(deaths_R) <- n_age
 
 deaths_V[] <- t_death_rate[i] * V[i]
 dim(deaths_V) <- n_age
+
+deaths_VD[] <- t_death_rate[i] * VD[i]
+dim(deaths_VD) <- n_age
 
 deaths_M[] <- t_death_rate[i] * M[i]
 dim(deaths_M) <- 2
@@ -98,6 +111,9 @@ dim(ageing_R) <- n_age
 
 ageing_V[] <- age_rate[i] * V[i]
 dim(ageing_V) <- n_age
+
+ageing_VD[] <- age_rate[i] * VD[i]
+dim(ageing_VD) <- n_age
 
 ageing_M[] <- age_rate[i] * M[i]
 dim(ageing_M) <- 2
@@ -122,6 +138,9 @@ dim(vaccination_attempts_S) <- n_age
 vaccinations_S[] <- vaccination_attempts_S[i] * vaccine_efficacy
 dim(vaccinations_S) <- n_age
 
+vaccinations_partial_S[] <- (vaccination_attempts_S[i] - vaccinations_S[i]) * vaccine_efficacy_disease_adjusted
+dim(vaccinations_partial_S) <- n_age
+
 vaccination_attempts_R[] <- vaccination_rate[i] * R[i]
 dim(vaccination_attempts_R) <- n_age
 
@@ -131,18 +150,20 @@ dim(vaccinations_R) <- n_age
 vaccination_attempts_M <- vaccination_rate[2] * M[2]
 vaccinations_M <- vaccination_attempts_M * vaccine_efficacy
 
+vaccinations_partial_M <- (vaccination_attempts_M - vaccinations_M) * vaccine_efficacy_disease_adjusted
+
 #derivatives
 dim(S) <- n_age
 initial(S[]) <- S_0[i]
 deriv(S[1]) <- births_S + natural_waning[i] - ageing_S[i] - infections[i] - deaths_S[i]
-deriv(S[2]) <- loses_maternal + ageing_S[i-1] + natural_waning[i] + vaccine_waning[i] - vaccinations_S[i] - ageing_S[i] - infections[i] - deaths_S[i]
-deriv(S[3]) <- ageing_S[i-1] + ageing_M[2] + natural_waning[i] + vaccine_waning[i] - vaccinations_S[i] - ageing_S[i] - infections[i] - deaths_S[i]
-deriv(S[4:n_age]) <- ageing_S[i-1] + natural_waning[i] + vaccine_waning[i] - vaccinations_S[i] - ageing_S[i] - infections[i] - deaths_S[i]
+deriv(S[2]) <- loses_maternal + ageing_S[i-1] + natural_waning[i] + vaccine_waning[i] + vaccine_partial_waning[i] - vaccinations_S[i] - vaccinations_partial_S[i] - ageing_S[i] - infections[i] - deaths_S[i]
+deriv(S[3]) <- ageing_S[i-1] + ageing_M[2] + natural_waning[i] + vaccine_waning[i] + vaccine_partial_waning[i] - vaccinations_S[i] - vaccinations_partial_S[i] - ageing_S[i] - infections[i] - deaths_S[i]
+deriv(S[4:n_age]) <- ageing_S[i-1] + natural_waning[i] + vaccine_waning[i] + vaccine_partial_waning[i] - vaccinations_S[i] - vaccinations_partial_S[i] - ageing_S[i] - infections[i] - deaths_S[i]
 
 dim(R) <- n_age
 initial(R[]) <- R_0[i]
-deriv(R[1]) <- infections[i] - ageing_R[i] - deaths_R[i] - natural_waning[i]
-deriv(R[2:n_age]) <- infections[i] + ageing_R[i-1] - vaccinations_R[i] - ageing_R[i] - deaths_R[i] - natural_waning[i]
+deriv(R[1]) <- infections[i] + infections_VD[i] - ageing_R[i] - deaths_R[i] - natural_waning[i]
+deriv(R[2:n_age]) <- infections[i] + infections_VD[i] + ageing_R[i-1] - vaccinations_R[i] - ageing_R[i] - deaths_R[i] - natural_waning[i]
 
 dim(V) <- n_age
 initial(V[]) <- 0
@@ -150,10 +171,16 @@ deriv(V[1]) <- 0
 deriv(V[2]) <- vaccinations_S[i] + vaccinations_R[i] + vaccinations_M + ageing_V[i-1] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
 deriv(V[3:n_age]) <- vaccinations_S[i] + vaccinations_R[i] + ageing_V[i-1] - ageing_V[i] - deaths_V[i] - vaccine_waning[i]
 
+dim(VD) <- n_age
+initial(VD[]) <- 0
+deriv(VD[1]) <- 0
+deriv(VD[2]) <- vaccinations_partial_S[i] + vaccinations_partial_M + ageing_VD[i-1] - infections_VD[i] - ageing_VD[i] - deaths_VD[i] - vaccine_partial_waning[i]
+deriv(VD[3:n_age]) <- vaccinations_partial_S[i] + ageing_VD[i-1] - infections_VD[i] - ageing_VD[i] - deaths_VD[i] - vaccine_partial_waning[i]
+
 dim(M) <- 2
 initial(M[]) <- M_0[i]
 deriv(M[1]) <- births_M - ageing_M[1] - deaths_M[1]
-deriv(M[2]) <- ageing_M[1] - vaccinations_M - ageing_M[2] - deaths_M[2] - loses_maternal
+deriv(M[2]) <- ageing_M[1] - vaccinations_M - vaccinations_partial_M - ageing_M[2] - deaths_M[2] - loses_maternal
 
 #outputs
 

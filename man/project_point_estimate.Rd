@@ -19,6 +19,7 @@ project_point_estimate(
   force_of_infection,
   tt_force_of_infection = NULL,
   vaccine_efficacy,
+  vaccine_efficacy_disease,
   vaccinations,
   tt_vaccinations = NULL,
   duration_of_immunity,
@@ -56,6 +57,8 @@ project_point_estimate(
 
 \item{vaccine_efficacy}{list of named vectors of vaccine efficacy}
 
+\item{vaccine_efficacy_disease}{list of named vectors of against disease, should be the total efficacy not adjusted for protection against infection}
+
 \item{vaccinations}{list of named vectors of vaccine dose/rate parameters}
 
 \item{tt_vaccinations}{list of named vectors of time varying vaccine doses}
@@ -69,5 +72,5 @@ project_point_estimate(
 \item{M_0}{list of named vectors of initial maternal immunity}
 }
 \description{
-Runs multiple models for each vaccine type (determined by the first dimension of relevant parameters
+Runs multiple models for each vaccine type (determined by the first dimension of relevant parameters)
 }

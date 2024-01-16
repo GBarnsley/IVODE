@@ -140,3 +140,10 @@ check_list_format <- function(list_par, list_names) {
         stop(paste(list_par_name, "must contain and entry for each of", paste(list_names, collapse = ", ")))
     }
 }
+#' Check the format of efficacy
+#' @noRd
+check_efficacy_consistency <- function(efficacy, efficacy_disease) {
+    if (efficacy_disease < efficacy) {
+        stop("efficacy_disease must be greater than or equal to efficacy")
+    }
+}

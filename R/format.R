@@ -18,20 +18,21 @@ setMethod(
     signature(output = 'ANY'),
     function(output, compartments, reduce_age) {
         #check requested compartments
-        available_compartments <- c("Susceptible", "Immune", "Immune(acquired)", "Immune(Vaccine)", "Immune(Maternal)", "Doses", "Population")
+        available_compartments <- c("Susceptible", "Immune", "Immune(acquired)", "Immune(Vaccine)", "Immune(Maternal)", "Immune(Disease)", "Doses", "Population")
         if (any(!compartments %in% available_compartments)) {
             stop(paste("compartments must be one of", paste0(available_compartments, collapse = ", ")))
         }
 
         #match to compartment names
         matchings <- list(
-            Susceptible = "S",
+            Susceptible = c("S", "VD"),
             Immune = c("V", "R", "M"),
             `Immune(acquired)` = "R",
             `Immune(Vaccine)` = "V",
             `Immune(Maternal)` = "M",
+            `Immune(Disease)` = c("V", "R", "M", "VD"),
             Doses = "vaccination_doses",
-            Population = c("S", "R", "M", "V")
+            Population = c("S", "R", "M", "V", "VD")
         )
         #convert output to correct format
         n_age <- output@parameters$n_age

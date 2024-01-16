@@ -15,6 +15,7 @@ simulate(
   force_of_infection,
   tt_force_of_infection = NULL,
   vaccine_efficacy,
+  vaccine_efficacy_disease,
   vaccinations,
   tt_vaccinations = NULL,
   duration_of_immunity,
@@ -45,6 +46,8 @@ simulate(
 \item{tt_force_of_infection}{Times at which force of infection changes}
 
 \item{vaccine_efficacy}{Efficacy of vaccine}
+
+\item{vaccine_efficacy_disease}{Efficacy of vaccine against disease, should be the total efficacy not adjusted for protection against infection}
 
 \item{vaccinations}{Doses or rates of vaccine given each day}
 

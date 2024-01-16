@@ -5,6 +5,7 @@ collate_parameters <- function(
     force_of_infection,
     tt_force_of_infection,
     vaccine_efficacy,
+    vaccine_efficacy_disease,
     vaccinations,
     tt_vaccinations,
     duration_of_immunity,
@@ -25,6 +26,7 @@ collate_parameters <- function(
     check_list_format(force_of_infection, vaccine_names)
     check_list_format(tt_force_of_infection, vaccine_names)
     check_list_format(vaccine_efficacy, vaccine_names)
+    check_list_format(vaccine_efficacy_disease, vaccine_names)
     check_list_format(vaccinations, vaccine_names)
     check_list_format(tt_vaccinations, vaccine_names)
     check_list_format(duration_of_immunity, vaccine_names)
@@ -38,6 +40,7 @@ collate_parameters <- function(
             force_of_infection = force_of_infection[[.x]],
             tt_force_of_infection = tt_force_of_infection[[.x]],
             vaccine_efficacy = vaccine_efficacy[[.x]],
+            vaccine_efficacy_disease = vaccine_efficacy_disease[[.x]],
             vaccinations = vaccinations[[.x]],
             tt_vaccinations = tt_vaccinations[[.x]],
             duration_of_immunity = duration_of_immunity[[.x]],
@@ -65,7 +68,7 @@ drop_first_row_output <- function(object) {
 
 #' Function to project immunity using point estimates of the parameters
 #' 
-#' Runs multiple models for each vaccine type (determined by the first dimension of relevant parameters
+#' Runs multiple models for each vaccine type (determined by the first dimension of relevant parameters)
 #' @param type Type of model to run
 #' @param t_projection_starts Time to start projections
 #' @param t_projection_ends Time to end projections
@@ -80,6 +83,7 @@ drop_first_row_output <- function(object) {
 #' @param force_of_infection list of named vectors of force of infection
 #' @param tt_force_of_infection list of named vectors of time varying force of infection
 #' @param vaccine_efficacy list of named vectors of vaccine efficacy
+#' @param vaccine_efficacy_disease list of named vectors of against disease, should be the total efficacy not adjusted for protection against infection
 #' @param vaccinations list of named vectors of vaccine dose/rate parameters
 #' @param tt_vaccinations list of named vectors of time varying vaccine doses
 #' @param duration_of_immunity list of named vectors of duration of immunity
@@ -103,6 +107,7 @@ project_point_estimate <- function(
     force_of_infection,
     tt_force_of_infection = NULL,
     vaccine_efficacy,
+    vaccine_efficacy_disease,
     vaccinations,
     tt_vaccinations = NULL,
     duration_of_immunity,
@@ -127,6 +132,7 @@ project_point_estimate <- function(
         force_of_infection = 0,
         tt_force_of_infection = NULL,
         vaccine_efficacy = 0,
+        vaccine_efficacy_disease = 0,
         vaccinations = rep(0, n_age),
         tt_vaccinations = NULL,
         duration_of_immunity = 100,
@@ -147,6 +153,7 @@ project_point_estimate <- function(
         force_of_infection = force_of_infection,
         tt_force_of_infection = tt_force_of_infection,
         vaccine_efficacy = vaccine_efficacy,
+        vaccine_efficacy_disease = vaccine_efficacy_disease,
         vaccinations = vaccinations,
         tt_vaccinations = tt_vaccinations,
         duration_of_immunity = duration_of_immunity,

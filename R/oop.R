@@ -215,6 +215,24 @@ setMethod(
         return(pars_list)
     }
 )
+#' Format vaccine efficacy disease
+#' @noRd
+setGeneric(
+    "format_vaccine_efficacy_disease",
+    function(type, pars_list, vaccine_efficacy_disease) {
+        standardGeneric("format_vaccine_efficacy_disease")
+    }
+)
+#' Default to format vaccine efficacy disease
+#' @noRd
+setMethod(
+    "format_vaccine_efficacy_disease",
+    signature(type = "IVODE_model"),
+    function(type, pars_list, vaccine_efficacy_disease) {
+        pars_list$vaccine_efficacy_disease <- vaccine_efficacy_disease
+        return(pars_list)
+    }
+)
 #' Format waning
 #' @noRd
 setGeneric(
@@ -304,8 +322,26 @@ setMethod(
             #convert par to matrix
             vaccinations <- matrix(vaccinations, nrow = 1)
         }
-        pars_list$vaccination_rate <- vaccinations
-        pars_list$tt_vaccination_rate <- tt_vaccinations
+        check_format_percentage(vaccinations)
+        #convert from coverage to rate
+
+        vaccine_efficacy <- pars_list$vaccine_efficacy
+        vaccine_efficacy_disease <- pars_list$vaccine_efficacy_disease
+        
+        vaccine_efficacy_disease_adjusted <- (vaccine_efficacy_disease - vaccine_efficacy) / (1 - vaccine_efficacy)
+
+        vaccinations_partial <- vaccinations_complete <- vaccinations
+
+        for (t in 1:nrow(vaccinations)) {
+            vaccinations_complete[t, ] <- vaccinations[t, ] * vaccine_efficacy
+            vaccinations_partial[t, ] <- vaccinations[t, ] * (1-vaccine_efficacy) * vaccine_efficacy_disease_adjusted
+        }
+
+        pars_list$vaccine_efficacy <- pars_list$vaccine_efficacy_disease <- NULL
+
+        pars_list$vaccination_coverage <- vaccinations_complete
+        pars_list$vaccination_partial_coverage <- vaccinations_partial
+        pars_list$tt_vaccination_coverage <- tt_vaccinations
         return(pars_list)
     }
 )
