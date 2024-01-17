@@ -338,6 +338,7 @@ SEXP deterministic_gz_initial_conditions(SEXP internal_p, SEXP t_ptr);
 void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double * state, double * dstatedt, double * output);
 void deterministic_gz_rhs_dde(size_t neq, double t, double * state, double * dstatedt, void * internal);
 void deterministic_gz_rhs_desolve(int * neq, double * t, double * state, double * dstatedt, double * output, int * np);
+void deterministic_gz_output_dde(size_t n_eq, double t, double * state, size_t n_output, double * output, void * internal_p);
 SEXP deterministic_gz_rhs_r(SEXP internal_p, SEXP t, SEXP state);
 deterministic_internal* deterministic_get_internal(SEXP internal_p, int closed_error);
 static void deterministic_finalise(SEXP internal_p);
@@ -1190,8 +1191,16 @@ SEXP deterministic_gz_metadata(SEXP internal_p) {
   SET_STRING_ELT(variable_names, 4, mkChar("M"));
   SET_VECTOR_ELT(ret, 0, variable_length);
   UNPROTECT(2);
-  SET_VECTOR_ELT(ret, 1, R_NilValue);
-  SET_VECTOR_ELT(ret, 2, ScalarInteger(0));
+  SEXP output_length = PROTECT(allocVector(VECSXP, 2));
+  SEXP output_names = PROTECT(allocVector(STRSXP, 2));
+  setAttrib(output_length, R_NamesSymbol, output_names);
+  SET_VECTOR_ELT(output_length, 0, R_NilValue);
+  SET_VECTOR_ELT(output_length, 1, R_NilValue);
+  SET_STRING_ELT(output_names, 0, mkChar("temp1"));
+  SET_STRING_ELT(output_names, 1, mkChar("temp2"));
+  SET_VECTOR_ELT(ret, 1, output_length);
+  UNPROTECT(2);
+  SET_VECTOR_ELT(ret, 2, ScalarInteger(2));
   SEXP interpolate_t = PROTECT(allocVector(VECSXP, 3));
   SEXP interpolate_t_nms = PROTECT(allocVector(STRSXP, 3));
   setAttrib(interpolate_t, R_NamesSymbol, interpolate_t_nms);
@@ -1258,12 +1267,6 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
   for (int i = 1; i <= internal->dim_loses_immunity; ++i) {
     internal->loses_immunity[i - 1] = internal->waning_R[i - 1] + internal->waning_V[i - 1] + internal->waning_VD[i - 1];
   }
-  for (int i = 1; i <= internal->dim_susceptible_child_bearing; ++i) {
-    internal->susceptible_child_bearing[i - 1] = (internal->susceptible_pop[i - 1]) * internal->child_bearing[i - 1];
-  }
-  for (int i = 1; i <= internal->dim_total_child_bearing; ++i) {
-    internal->total_child_bearing[i - 1] = internal->total_pop[i - 1] * internal->child_bearing[i - 1];
-  }
   for (int i = 1; i <= internal->dim_weighted_totals; ++i) {
     internal->weighted_totals[i - 1] = internal->prop_death[i - 1] * internal->total_pop[i - 1];
   }
@@ -1276,7 +1279,7 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
   double births_total = (odin_sum1(internal->total_pop, 0, internal->dim_total_pop)) * t_crude_birth_rate;
   double t_adjusted_foi = fmin(t_crude_foi * odin_sum1(internal->total_pop, 0, internal->dim_total_pop) / (double) odin_sum1(internal->susceptible_pop, 0, internal->dim_susceptible_pop), 1);
   for (int i = 1; i <= internal->dim_t_death_rate; ++i) {
-    internal->t_death_rate[i - 1] = t_crude_death_rate * internal->prop_death[i - 1] * odin_sum1(internal->total_pop, 0, internal->dim_total_pop) / (double) odin_sum1(internal->weighted_totals, 0, internal->dim_weighted_totals);
+    internal->t_death_rate[i - 1] = fmin(t_crude_death_rate * internal->prop_death[i - 1] * odin_sum1(internal->total_pop, 0, internal->dim_total_pop) / (double) odin_sum1(internal->weighted_totals, 0, internal->dim_weighted_totals), 1);
   }
   cinterpolate_eval(t, internal->interpolate_t_vaccination_coverage, internal->t_vaccination_coverage);
   cinterpolate_eval(t, internal->interpolate_t_vaccination_partial_coverage, internal->t_vaccination_partial_coverage);
@@ -1295,8 +1298,22 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
   for (int i = 1; i <= internal->dim_ages_up_VD_v; ++i) {
     internal->ages_up_VD_v[i - 1] = internal->t_vaccination_coverage[i - 1] * internal->ages_up_VD[i - 1];
   }
+  {
+     int i = 1;
+     internal->births_deaths_M[i - 1] = -(internal->t_death_rate[i - 1]) * M[i - 1];
+  }
+  for (int i = 2; i <= internal->n_maternal; ++i) {
+    internal->births_deaths_M[i - 1] = -(internal->t_death_rate[i - 1]) * M[i - 1];
+  }
   for (int i = 1; i <= internal->dim_births_deaths_R; ++i) {
     internal->births_deaths_R[i - 1] = -(internal->t_death_rate[i - 1]) * R[i - 1];
+  }
+  {
+     int i = 1;
+     internal->births_deaths_S[i - 1] = births_total - internal->t_death_rate[i - 1] * S[i - 1];
+  }
+  for (int i = 2; i <= internal->n_age; ++i) {
+    internal->births_deaths_S[i - 1] = -(internal->t_death_rate[i - 1]) * S[i - 1];
   }
   for (int i = 1; i <= internal->dim_births_deaths_V; ++i) {
     internal->births_deaths_V[i - 1] = -(internal->t_death_rate[i - 1]) * V[i - 1];
@@ -1304,7 +1321,6 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
   for (int i = 1; i <= internal->dim_births_deaths_VD; ++i) {
     internal->births_deaths_VD[i - 1] = -(internal->t_death_rate[i - 1]) * VD[i - 1];
   }
-  double births_S = births_total * (odin_sum1(internal->susceptible_child_bearing, 0, internal->dim_susceptible_child_bearing) / (double) odin_sum1(internal->total_child_bearing, 0, internal->dim_total_child_bearing));
   for (int i = 1; i <= internal->dim_infections_S; ++i) {
     internal->infections_S[i - 1] = t_adjusted_foi * S[i - 1];
   }
@@ -1318,7 +1334,7 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
   for (int i = 2; i <= internal->age_group_loses_maternal; ++i) {
     internal->ageing_V[i - 1] = internal->ages_up_M_v[i - 1 - 1] + internal->ages_up_V[i - 1 - 1] + internal->ages_up_S_v[i - 1 - 1] + internal->ages_up_R_v[i - 1 - 1] + internal->ages_up_VD_v[i - 1 - 1] - internal->ages_up_V[i - 1];
   }
-  for (int i = 2; i <= internal->age_group_no_maternal; ++i) {
+  for (int i = internal->age_group_no_maternal; i <= internal->n_age_penultimate; ++i) {
     internal->ageing_V[i - 1] = internal->ages_up_V[i - 1 - 1] + internal->ages_up_S_v[i - 1 - 1] + internal->ages_up_R_v[i - 1 - 1] + internal->ages_up_VD_v[i - 1 - 1] - internal->ages_up_V[i - 1];
   }
   {
@@ -1337,14 +1353,6 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
   for (int i = 1; i <= internal->dim_ages_up_VD_nv; ++i) {
     internal->ages_up_VD_nv[i - 1] = internal->ages_up_VD[i - 1] - internal->ages_up_VD_v[i - 1];
   }
-  {
-     int i = 1;
-     internal->births_deaths_S[i - 1] = births_S - internal->t_death_rate[i - 1] * S[i - 1];
-  }
-  for (int i = 2; i <= internal->n_age; ++i) {
-    internal->births_deaths_S[i - 1] = -(internal->t_death_rate[i - 1]) * S[i - 1];
-  }
-  double births_M = births_total - births_S;
   for (int i = 1; i <= internal->dim_gains_immunity; ++i) {
     internal->gains_immunity[i - 1] = internal->infections_S[i - 1] + internal->infections_VD[i - 1];
   }
@@ -1370,7 +1378,7 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
      int i = 1;
      internal->ageing_S[i - 1] = -(internal->ages_up_S[i - 1]);
   }
-  for (int i = 2; i <= (internal->age_group_loses_maternal - 1); ++i) {
+  for (int i = 2; i <= internal->n_maternal; ++i) {
     internal->ageing_S[i - 1] = internal->ages_up_S_nv[i - 1 - 1] - internal->ages_up_S[i - 1];
   }
   {
@@ -1395,13 +1403,6 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
      int i = internal->n_age;
      internal->ageing_VD[i - 1] = internal->ages_up_VD_nv[i - 1 - 1] + internal->ages_up_S_pv[i - 1 - 1];
   }
-  {
-     int i = 1;
-     internal->births_deaths_M[i - 1] = births_M - internal->t_death_rate[i - 1] * M[i - 1];
-  }
-  for (int i = 2; i <= internal->n_maternal; ++i) {
-    internal->births_deaths_M[i - 1] = -(internal->t_death_rate[i - 1]) * M[i - 1];
-  }
   for (int i = 1; i <= internal->dim_V; ++i) {
     dstatedt[internal->offset_variable_V + i - 1] = internal->births_deaths_V[i - 1] + internal->ageing_V[i - 1] - internal->waning_V[i - 1];
   }
@@ -1417,6 +1418,18 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
   for (int i = 1; i <= internal->dim_VD; ++i) {
     dstatedt[internal->offset_variable_VD + i - 1] = internal->births_deaths_VD[i - 1] + internal->ageing_VD[i - 1] - internal->waning_VD[i - 1] - internal->infections_VD[i - 1];
   }
+  if (output) {
+    for (int i = 1; i <= internal->dim_susceptible_child_bearing; ++i) {
+      internal->susceptible_child_bearing[i - 1] = (internal->susceptible_pop[i - 1]) * internal->child_bearing[i - 1];
+    }
+    for (int i = 1; i <= internal->dim_total_child_bearing; ++i) {
+      internal->total_child_bearing[i - 1] = internal->total_pop[i - 1] * internal->child_bearing[i - 1];
+    }
+    double births_S = births_total * (odin_sum1(internal->susceptible_child_bearing, 0, internal->dim_susceptible_child_bearing) / (double) odin_sum1(internal->total_child_bearing, 0, internal->dim_total_child_bearing));
+    double births_M = births_total - births_S;
+    output[0] = births_S;
+    output[1] = births_M;
+  }
 }
 void deterministic_gz_rhs_dde(size_t neq, double t, double * state, double * dstatedt, void * internal) {
   deterministic_gz_rhs((deterministic_gz_internal*)internal, t, state, dstatedt, NULL);
@@ -1424,10 +1437,43 @@ void deterministic_gz_rhs_dde(size_t neq, double t, double * state, double * dst
 void deterministic_gz_rhs_desolve(int * neq, double * t, double * state, double * dstatedt, double * output, int * np) {
   deterministic_gz_rhs(deterministic_gz_internal_ds, *t, state, dstatedt, output);
 }
+void deterministic_gz_output_dde(size_t n_eq, double t, double * state, size_t n_output, double * output, void * internal_p) {
+  deterministic_gz_internal *internal = (deterministic_gz_internal*) internal_p;
+  double * S = state + 0;
+  double * R = state + internal->dim_S;
+  double * V = state + internal->offset_variable_V;
+  double * VD = state + internal->offset_variable_VD;
+  double * M = state + internal->offset_variable_M;
+  for (int i = 1; i <= internal->dim_susceptible_pop; ++i) {
+    internal->susceptible_pop[i - 1] = S[i - 1] + VD[i - 1];
+  }
+  for (int i = 1; i <= internal->n_maternal; ++i) {
+    internal->total_pop[i - 1] = R[i - 1] + S[i - 1] + V[i - 1] + M[i - 1] + VD[i - 1];
+  }
+  for (int i = internal->n_maternal; i <= internal->n_age; ++i) {
+    internal->total_pop[i - 1] = R[i - 1] + S[i - 1] + V[i - 1] + VD[i - 1];
+  }
+  for (int i = 1; i <= internal->dim_susceptible_child_bearing; ++i) {
+    internal->susceptible_child_bearing[i - 1] = (internal->susceptible_pop[i - 1]) * internal->child_bearing[i - 1];
+  }
+  for (int i = 1; i <= internal->dim_total_child_bearing; ++i) {
+    internal->total_child_bearing[i - 1] = internal->total_pop[i - 1] * internal->child_bearing[i - 1];
+  }
+  double t_crude_birth_rate = 0.0;
+  cinterpolate_eval(t, internal->interpolate_t_crude_birth_rate, &t_crude_birth_rate);
+  double births_total = (odin_sum1(internal->total_pop, 0, internal->dim_total_pop)) * t_crude_birth_rate;
+  double births_S = births_total * (odin_sum1(internal->susceptible_child_bearing, 0, internal->dim_susceptible_child_bearing) / (double) odin_sum1(internal->total_child_bearing, 0, internal->dim_total_child_bearing));
+  double births_M = births_total - births_S;
+  output[0] = births_S;
+  output[1] = births_M;
+}
 SEXP deterministic_gz_rhs_r(SEXP internal_p, SEXP t, SEXP state) {
   SEXP dstatedt = PROTECT(allocVector(REALSXP, LENGTH(state)));
   deterministic_gz_internal *internal = deterministic_gz_get_internal(internal_p, 1);
-  double *output = NULL;
+  SEXP output_ptr = PROTECT(allocVector(REALSXP, 2));
+  setAttrib(dstatedt, install("output"), output_ptr);
+  UNPROTECT(1);
+  double *output = REAL(output_ptr);
   deterministic_gz_rhs(internal, scalar_real(t, "t"), REAL(state), REAL(dstatedt), output);
   UNPROTECT(1);
   return dstatedt;

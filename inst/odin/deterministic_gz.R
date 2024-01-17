@@ -81,14 +81,18 @@ births_S <- births_total * (sum(susceptible_child_bearing[]) / sum(total_child_b
 
 births_M <- births_total - births_S
 
+output(temp1) <- births_S
+output(temp2) <- births_M
+
 #adjust death rate so that it matches crude rate
 weighted_totals[] <- prop_death[i] * total_pop[i]
 dim(weighted_totals) <- n_age
 
-t_death_rate[] <- t_crude_death_rate * prop_death[i] * sum(total_pop[]) / sum(weighted_totals[])
+t_death_rate[] <- min(t_crude_death_rate * prop_death[i] * sum(total_pop[]) / sum(weighted_totals[]), 1)
 dim(t_death_rate) <- n_age
 
-births_deaths_S[1] <- births_S - t_death_rate[i] * S[i]
+#births_deaths_S[1] <- births_S - t_death_rate[i] * S[i] #TEMP!
+births_deaths_S[1] <- births_total - t_death_rate[i] * S[i]
 births_deaths_S[2:n_age] <- -t_death_rate[i] * S[i]
 dim(births_deaths_S) <- n_age
 
@@ -101,7 +105,8 @@ dim(births_deaths_V) <- n_age
 births_deaths_VD[] <- -t_death_rate[i] * VD[i]
 dim(births_deaths_VD) <- n_age
 
-births_deaths_M[1] <- births_M - t_death_rate[i] * M[i]
+#births_deaths_M[1] <- births_M - t_death_rate[i] * M[i] #TEMP!
+births_deaths_M[1] <- - t_death_rate[i] * M[i]
 births_deaths_M[2:n_maternal] <- -t_death_rate[i] * M[i]
 dim(births_deaths_M) <- n_maternal
 
@@ -154,7 +159,7 @@ ages_up_S_nv[] <- ages_up_S[i] - ages_up_S_v[i] - ages_up_S_pv[i]
 dim(ages_up_S_nv) <- n_age
 
 ageing_S[1] <- -ages_up_S[i]
-ageing_S[2:(age_group_loses_maternal - 1)] <- ages_up_S_nv[i-1] - ages_up_S[i]
+ageing_S[2:n_maternal] <- ages_up_S_nv[i-1] - ages_up_S[i]
 ageing_S[age_group_loses_maternal] <- ages_up_S_nv[i-1] + ages_up_M_nv[i-1] - ages_up_S[i]
 ageing_S[age_group_no_maternal:n_age_penultimate] <- ages_up_S_nv[i-1] - ages_up_S[i]
 ageing_S[n_age] <- ages_up_S_nv[i-1]
@@ -183,7 +188,7 @@ dim(ages_up_V) <- n_age
 
 ageing_V[1] <- -ages_up_V[i]
 ageing_V[2:age_group_loses_maternal] <- ages_up_M_v[i-1] + ages_up_V[i-1] + ages_up_S_v[i-1] + ages_up_R_v[i-1] + ages_up_VD_v[i-1] - ages_up_V[i]
-ageing_V[2:age_group_no_maternal] <- ages_up_V[i-1] + ages_up_S_v[i-1] + ages_up_R_v[i-1] + ages_up_VD_v[i-1] - ages_up_V[i]
+ageing_V[age_group_no_maternal:n_age_penultimate] <- ages_up_V[i-1] + ages_up_S_v[i-1] + ages_up_R_v[i-1] + ages_up_VD_v[i-1] - ages_up_V[i]
 ageing_V[n_age] <- ages_up_V[i-1] + ages_up_S_v[i-1] + ages_up_R_v[i-1] + ages_up_VD_v[i-1]
 dim(ageing_V) <- n_age
 
@@ -217,6 +222,17 @@ dim(ages_up_M_nv) <- n_maternal
 ageing_M[1] <- -ages_up_M[i]
 ageing_M[2:n_maternal] <- ages_up_M_nv[i-1] - ages_up_M[i]
 dim(ageing_M) <- n_maternal
+
+#output(temp[1:n_maternal]) <- ageing_S[i] + ageing_R[i] + ageing_V[i] + ageing_M[i] + ageing_VD[i]
+#output(temp[(n_maternal + 1):n_age]) <- ageing_S[i] + ageing_R[i] + ageing_V[i] + ageing_VD[i]
+#dim(temp) <- n_age
+
+#output(temp) <- sum(ageing_S[]) + sum(ageing_R[]) + sum(ageing_V[]) + sum(ageing_M[]) + sum(ageing_VD[])
+#
+#output(tempS) <- sum(ages_up_S_v[]) + sum(ages_up_S_pv[]) + sum(ages_up_S_nv[]) - sum(ages_up_S[])
+#output(tempR) <- sum(ages_up_R_v[]) + sum(ages_up_R_nv[]) - sum(ages_up_R[])
+#output(tempVD) <- sum(ages_up_VD_v[]) + sum(ages_up_VD_nv[]) - sum(ages_up_VD[])
+#output(tempM) <- sum(ages_up_M_v[]) + sum(ages_up_M_nv[]) - sum(ages_up_M[])
 
 #derivatives
 dim(S) <- n_age
