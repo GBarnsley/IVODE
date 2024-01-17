@@ -74,7 +74,7 @@ simulate <- function(
 
     check_initial_conditions(S_0, n_age)
     check_initial_conditions(R_0, n_age)
-    check_initial_conditions(M_0, 2)
+    #check_initial_conditions(M_0, 2) oop this
 
     #format variables for model
     pars_list <- list(n_age = n_age)
@@ -98,8 +98,8 @@ simulate <- function(
     pars_list <- format_initial_conditions(type_class, pars_list, S_0, "S")
 
     pars_list <- format_initial_conditions(type_class, pars_list, R_0, "R")
-    
-    pars_list <- format_initial_conditions(type_class, pars_list, M_0, "M")
+
+    pars_list <- format_initial_conditions_M(type_class, pars_list, M_0)
 
     pars_list <- format_vaccinations(type_class, pars_list, vaccinations, tt_vaccinations)
     

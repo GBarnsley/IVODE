@@ -75,7 +75,7 @@ test_that("simple deterministic", {
 test_that("gaza deterministic", {
   type <- "deterministic_gz"
   t <- seq(0, 365)
-  age_group_sizes <- c(365/12, 365*(11/12), 14*365, 45*365)
+  age_group_sizes <- c(365/12, (5/12)*365, 365*(6/12), 14*365, 45*365)
   n_age <- length(age_group_sizes) + 1
   death_rates <- 1/10000
   tt_death_rates <- NULL
@@ -86,11 +86,11 @@ test_that("gaza deterministic", {
   vaccine_efficacy <- 0.5
   vaccine_efficacy_disease <- 0.75
   coverage <- 0.50
-  vaccinations <- c(0, coverage, 0, 0, 0)
+  vaccinations <- c(0, 0, coverage, 0, 0, 0)
   tt_vaccinations <- NULL
   duration_of_immunity <- 365 * 5
   duration_of_maternal_immunity <- 364 / 2
-  M_0 <- rep(0, 2)
+  M_0 <- NULL
   S_0 <- rep(50000, n_age)
   R_0 <- rep(0, n_age)
   additional_parameters <- list(
@@ -125,9 +125,9 @@ test_that("gaza deterministic", {
   #number of vaccinated people should roughly be doses * time * efficacy (no waning)
   t <- c(0, 365 * 100)
   duration_of_immunity <- Inf
-  age_group_sizes <- c(365/12, 365*(11/12), 365 * (11/12), 365, 14*365, 45*365)
+  age_group_sizes <- c(365/12, 365*(5/12), 365 * (11/12), 365, 14*365, 45*365)
   n_age <- length(age_group_sizes) + 1
-  M_0 <- rep(0, 2)
+  M_0 <- NULL
   S_0 <- c(rep(5000, 1), rep(10, n_age - 1))
   R_0 <- rep(0, n_age)
   additional_parameters <- list(

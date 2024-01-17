@@ -269,6 +269,26 @@ setMethod(
         return(pars_list)
     }
 )
+#' Default to format maternal waning
+#' @noRd
+setMethod(
+    "format_maternal_waning",
+    signature(type = "deterministic_gz"),
+    function(type, pars_list, duration_of_maternal_immunity) {
+        age_group_sizes <- c(1/pars_list$age_rate, 0)
+        #select endpoint closest to maternal immunity duration given
+        age_group_ends <- cumsum(age_group_sizes)
+        pars_list$n_maternal <- which.min(abs(age_group_ends - duration_of_maternal_immunity))
+        if(abs(age_group_ends[pars_list$n_maternal] - duration_of_maternal_immunity) > 365/12) {
+            warning(paste0(
+                "simulated duration of natural immunity is ", age_group_ends[pars_list$n_maternal]*12/365,
+                " months, not ", duration_of_maternal_immunity*12/365,
+                " months, ensure this discprepancy is less than one month to remove this warning"
+            ))
+        }
+        return(pars_list)
+    }
+)
 #' Format initial conditions
 #' @noRd
 setGeneric(
@@ -284,6 +304,36 @@ setMethod(
     signature(type = "IVODE_model"),
     function(type, pars_list, initial_conditions, name) {
         pars_list[[paste0(name, "_0")]] <- initial_conditions
+        return(pars_list)
+    }
+)
+#' Format initial conditions
+#' @noRd
+setGeneric(
+    "format_initial_conditions_M",
+    function(type, pars_list, M_0) {
+        standardGeneric("format_initial_conditions_M")
+    }
+)
+#' Default to format initial conditions
+#' @noRd
+setMethod(
+    "format_initial_conditions_M",
+    signature(type = "IVODE_model"),
+    function(type, pars_list, M_0) {
+        format_initial_conditions(type, pars_list, M_0, "M")
+    }
+)
+#' format initial conditions for gaza model
+#' @noRd
+setMethod(
+    "format_initial_conditions_M",
+    signature(type = "deterministic_gz"),
+    function(type, pars_list, M_0) {
+        if (!is.null(M_0)) {
+            warning("M_0 cannot currently be specified for this model type, will be initalised at 0")
+        }
+        pars_list$M_0 <- rep(0, pars_list$n_maternal)
         return(pars_list)
     }
 )
