@@ -44,7 +44,7 @@ test_that("simple deterministic", {
   # all postive (with lower bound of 0.1)
   expect_true(all(res@output >= -0.1))
   #number of vaccinated people should roughly be doses * time * efficacy (no waning)
-  duration_of_immunity <- 365 * 100000000
+  duration_of_immunity <- Inf
   death_rates <- rep(0, n_age)
   res <- simulate(
     type,
@@ -135,7 +135,7 @@ test_that("gaza deterministic", {
     prop_death = rep(1, n_age)
   )
   #not sure this makes sense
-  vaccinations <- c(0, coverage, 0, 0, 0, 0, 0)
+  vaccinations <- c(0, 0, coverage, 0, 0, 0, 0)
   res <- simulate(
     type,
     t,

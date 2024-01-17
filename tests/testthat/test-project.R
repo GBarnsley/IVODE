@@ -62,17 +62,16 @@ test_that("deterministic point estimate projection gaza", {
   tt_birth_rates <- NULL
   duration_of_maternal_immunity <- 364 / 2
   vaccine_names <- c("PCV", "Measles")
-  force_of_infection <- list(PCV = 1/100, Measles = 1/100)
-  force_of_infection <- list(PCV = 0, Measles = 0)
+  force_of_infection <- list(PCV = 1/100, Measles = 0)
   tt_force_of_infection <- list(PCV = NULL, Measles = NULL)
-  vaccine_efficacy <- list(PCV = 0.5, Measles = 0.5)
-  vaccine_efficacy_disease <- list(PCV = 0.9, Measles = 0.9)
-  vaccinations <- list(PCV = c(0, 0.75, 0, 0, 0, 0), Measles = c(0, 0.75, 0, 0, 0, 0))
+  vaccine_efficacy <- list(PCV = 0.5, Measles = 0.7)
+  vaccine_efficacy_disease <- list(PCV = 0.6, Measles = 0.95)
+  vaccinations <- list(PCV = c(0, 0.5, 0, 0, 0, 0), Measles = c(0, 0.75, 0, 0, 0, 0))
   tt_vaccinations <- list(PCV = NULL, Measles = NULL)
-  duration_of_immunity <- list(PCV = 5*365, Measles = 5*365)
+  duration_of_immunity <- list(PCV = 5*365, Measles = 10*365)
   M_0 <- list(PCV = NULL, Measles = NULL)
-  S_0 <- list(PCV = rep(10000, n_age), Measles = rep(10000, n_age))
-  R_0 <- list(PCV = rep(1000, n_age), Measles = rep(1000, n_age))
+  S_0 <- list(PCV = rep(10000, n_age), Measles = rep(9000, n_age))
+  R_0 <- list(PCV = rep(1000, n_age), Measles = rep(2000, n_age))
 
   additional_parameters <- list(
     prop_death = rep(1, n_age)
@@ -106,60 +105,3 @@ test_that("deterministic point estimate projection gaza", {
   expect_true(is.data.frame(output$projections))
   #in projections the population should be the same as the initial population
 })
-
-odin::odin_package(here::here())
-load_all()
-
-
-  t_projection_starts <- 365 * 30
-  t_projection_ends <- t_projection_starts + 20
-
-  force_of_infection <- list(PCV = 1/100, Measles = 0)
-  vaccine_efficacy <- list(PCV = 0.5, Measles = 0.7) #issue
-  vaccine_efficacy_disease <- list(PCV = 0.6, Measles = 0.95) #fine
-  vaccinations <- list(PCV = c(0, 0.5, 0, 0, 0, 0), Measles = c(0, 0.75, 0, 0, 0, 0)) #issue
-  tt_vaccinations <- list(PCV = NULL, Measles = NULL)
-  duration_of_immunity <- list(PCV = 5*365, Measles = 10*365)#issue!
-  M_0 <- list(PCV = NULL, Measles = NULL)
-  S_0 <- list(PCV = rep(10000, n_age), Measles = rep(10000, n_age))
-  R_0 <- list(PCV = rep(1000, n_age), Measles = rep(1000, n_age))
-
-   #collate parameters
-    pars_list <- collate_parameters(
-        vaccine_names = vaccine_names,
-        force_of_infection = force_of_infection,
-        tt_force_of_infection = tt_force_of_infection,
-        vaccine_efficacy = vaccine_efficacy,
-        vaccine_efficacy_disease = vaccine_efficacy_disease,
-        vaccinations = vaccinations,
-        tt_vaccinations = tt_vaccinations,
-        duration_of_immunity = duration_of_immunity,
-        duration_of_maternal_immunity = duration_of_maternal_immunity,
-        type = type,
-        t = c(0, seq(t_projection_starts, t_projection_ends)),
-        age_group_sizes = age_group_sizes,
-        death_rates = death_rates,
-        tt_death_rates = tt_death_rates,
-        birth_rates = birth_rates,
-        tt_birth_rates = tt_birth_rates,
-        S_0 = S_0,
-        R_0 = R_0,
-        M_0 = M_0,
-        additional_parameters = additional_parameters
-    )
-
-    #now simulate for each vaccine
-    projections <- purrr::map_dfr(pars_list, ~do.call(simulate, .x) %>%
-        drop_first_row_output() %>%
-        format_output(
-            c("Immune", "Population"), reduce_age = FALSE
-        ), .id = "vaccine_type"
-    )
-
-    projections %>%
-        dplyr::filter(.data$compartment == "Population") %>%
-        dplyr::arrange(.data$t) %>%
-        dplyr::group_by(.data$t, .data$vaccine_type, .data$compartment) %>%
-        dplyr::summarise(value = sum(.data$value), .groups = "drop")
-
-do.call(simulate, pars_list$Measles)
