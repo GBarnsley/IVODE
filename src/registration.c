@@ -9,7 +9,6 @@
 
 /* .C calls */
 extern void deterministic_gz_initmod_desolve(void *);
-extern void deterministic_gz_output_dde(void *);
 extern void deterministic_gz_rhs_dde(void *);
 extern void deterministic_gz_rhs_desolve(void *);
 extern void deterministic_initmod_desolve(void *);
@@ -35,7 +34,6 @@ extern SEXP deterministic_set_user(void *, void *);
 
 static const R_CMethodDef CEntries[] = {
     {"deterministic_gz_initmod_desolve", (DL_FUNC) &deterministic_gz_initmod_desolve, 1},
-    {"deterministic_gz_output_dde",      (DL_FUNC) &deterministic_gz_output_dde,      1},
     {"deterministic_gz_rhs_dde",         (DL_FUNC) &deterministic_gz_rhs_dde,         1},
     {"deterministic_gz_rhs_desolve",     (DL_FUNC) &deterministic_gz_rhs_desolve,     1},
     {"deterministic_initmod_desolve",    (DL_FUNC) &deterministic_initmod_desolve,    1},

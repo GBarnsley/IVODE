@@ -338,7 +338,6 @@ SEXP deterministic_gz_initial_conditions(SEXP internal_p, SEXP t_ptr);
 void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double * state, double * dstatedt, double * output);
 void deterministic_gz_rhs_dde(size_t neq, double t, double * state, double * dstatedt, void * internal);
 void deterministic_gz_rhs_desolve(int * neq, double * t, double * state, double * dstatedt, double * output, int * np);
-void deterministic_gz_output_dde(size_t n_eq, double t, double * state, size_t n_output, double * output, void * internal_p);
 SEXP deterministic_gz_rhs_r(SEXP internal_p, SEXP t, SEXP state);
 deterministic_internal* deterministic_get_internal(SEXP internal_p, int closed_error);
 static void deterministic_finalise(SEXP internal_p);
@@ -1191,16 +1190,8 @@ SEXP deterministic_gz_metadata(SEXP internal_p) {
   SET_STRING_ELT(variable_names, 4, mkChar("M"));
   SET_VECTOR_ELT(ret, 0, variable_length);
   UNPROTECT(2);
-  SEXP output_length = PROTECT(allocVector(VECSXP, 2));
-  SEXP output_names = PROTECT(allocVector(STRSXP, 2));
-  setAttrib(output_length, R_NamesSymbol, output_names);
-  SET_VECTOR_ELT(output_length, 0, R_NilValue);
-  SET_VECTOR_ELT(output_length, 1, R_NilValue);
-  SET_STRING_ELT(output_names, 0, mkChar("temp"));
-  SET_STRING_ELT(output_names, 1, mkChar("N"));
-  SET_VECTOR_ELT(ret, 1, output_length);
-  UNPROTECT(2);
-  SET_VECTOR_ELT(ret, 2, ScalarInteger(2));
+  SET_VECTOR_ELT(ret, 1, R_NilValue);
+  SET_VECTOR_ELT(ret, 2, ScalarInteger(0));
   SEXP interpolate_t = PROTECT(allocVector(VECSXP, 3));
   SEXP interpolate_t_nms = PROTECT(allocVector(STRSXP, 3));
   setAttrib(interpolate_t, R_NamesSymbol, interpolate_t_nms);
@@ -1426,10 +1417,6 @@ void deterministic_gz_rhs(deterministic_gz_internal* internal, double t, double 
   for (int i = 1; i <= internal->dim_VD; ++i) {
     dstatedt[internal->offset_variable_VD + i - 1] = internal->births_deaths_VD[i - 1] + internal->ageing_VD[i - 1] - internal->waning_VD[i - 1] - internal->infections_VD[i - 1];
   }
-  if (output) {
-    output[1] = odin_sum1(internal->total_pop, 0, internal->dim_total_pop);
-    output[0] = t_adjusted_foi;
-  }
 }
 void deterministic_gz_rhs_dde(size_t neq, double t, double * state, double * dstatedt, void * internal) {
   deterministic_gz_rhs((deterministic_gz_internal*)internal, t, state, dstatedt, NULL);
@@ -1437,35 +1424,10 @@ void deterministic_gz_rhs_dde(size_t neq, double t, double * state, double * dst
 void deterministic_gz_rhs_desolve(int * neq, double * t, double * state, double * dstatedt, double * output, int * np) {
   deterministic_gz_rhs(deterministic_gz_internal_ds, *t, state, dstatedt, output);
 }
-void deterministic_gz_output_dde(size_t n_eq, double t, double * state, size_t n_output, double * output, void * internal_p) {
-  deterministic_gz_internal *internal = (deterministic_gz_internal*) internal_p;
-  double * S = state + 0;
-  double * R = state + internal->dim_S;
-  double * V = state + internal->offset_variable_V;
-  double * VD = state + internal->offset_variable_VD;
-  double * M = state + internal->offset_variable_M;
-  for (int i = 1; i <= internal->dim_susceptible_pop; ++i) {
-    internal->susceptible_pop[i - 1] = S[i - 1] + VD[i - 1];
-  }
-  for (int i = 1; i <= internal->n_maternal; ++i) {
-    internal->total_pop[i - 1] = R[i - 1] + S[i - 1] + V[i - 1] + M[i - 1] + VD[i - 1];
-  }
-  for (int i = (internal->n_maternal + 1); i <= internal->n_age; ++i) {
-    internal->total_pop[i - 1] = R[i - 1] + S[i - 1] + V[i - 1] + VD[i - 1];
-  }
-  output[1] = odin_sum1(internal->total_pop, 0, internal->dim_total_pop);
-  double t_crude_foi = 0.0;
-  cinterpolate_eval(t, internal->interpolate_t_crude_foi, &t_crude_foi);
-  double t_adjusted_foi = fmin(t_crude_foi * odin_sum1(internal->total_pop, 0, internal->dim_total_pop) / (double) odin_sum1(internal->susceptible_pop, 0, internal->dim_susceptible_pop), 1);
-  output[0] = t_adjusted_foi;
-}
 SEXP deterministic_gz_rhs_r(SEXP internal_p, SEXP t, SEXP state) {
   SEXP dstatedt = PROTECT(allocVector(REALSXP, LENGTH(state)));
   deterministic_gz_internal *internal = deterministic_gz_get_internal(internal_p, 1);
-  SEXP output_ptr = PROTECT(allocVector(REALSXP, 2));
-  setAttrib(dstatedt, install("output"), output_ptr);
-  UNPROTECT(1);
-  double *output = REAL(output_ptr);
+  double *output = NULL;
   deterministic_gz_rhs(internal, scalar_real(t, "t"), REAL(state), REAL(dstatedt), output);
   UNPROTECT(1);
   return dstatedt;

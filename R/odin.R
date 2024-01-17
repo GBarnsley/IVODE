@@ -16,8 +16,7 @@ deterministic_gz_ <- R6::R6Class(
     cfuns = list(
       rhs_dde = "deterministic_gz_rhs_dde",
       rhs_desolve = "deterministic_gz_rhs_desolve",
-      initmod_desolve = "deterministic_gz_initmod_desolve",
-      output_dde = "deterministic_gz_output_dde"),
+      initmod_desolve = "deterministic_gz_initmod_desolve"),
     dll = "IVODE",
     user = c("age_rate", "child_bearing", "crude_birth_rate",
              "crude_death_rate", "crude_foi", "M_0", "n_age", "n_maternal",
@@ -35,7 +34,6 @@ deterministic_gz_ <- R6::R6Class(
         .C("deterministic_gz_rhs_dde", package = "IVODE")
         .C("deterministic_gz_rhs_desolve", package = "IVODE")
         .C("deterministic_gz_initmod_desolve", package = "IVODE")
-        .C("deterministic_gz_output_dde", package = "IVODE")
       }
     },
 
