@@ -74,14 +74,14 @@ test_that("simple deterministic", {
 
 test_that("gaza deterministic", {
   type <- "deterministic_gz"
-  t <- seq(0, 365)
+  t <- seq(0, 365*20, 365)
   age_group_sizes <- c(365/12, (5/12)*365, 365*(6/12), 14*365, 45*365)
   n_age <- length(age_group_sizes) + 1
   death_rates <- 1/10000
   tt_death_rates <- NULL
   birth_rates <- 1/1000
   tt_birth_rates <- NULL
-  force_of_infection <- 0
+  force_of_infection <- 1
   tt_force_of_infection <- NULL
   vaccine_efficacy <- 0.5
   vaccine_efficacy_disease <- 0.75
@@ -124,6 +124,7 @@ test_that("gaza deterministic", {
   expect_true(all(res@output >= -0.1))
   #number of vaccinated people should roughly be doses * time * efficacy (no waning)
   t <- c(0, 365 * 100)
+  force_of_infection <- 0
   duration_of_immunity <- Inf
   age_group_sizes <- c(365/12, 365*(5/12), 365 * (11/12), 365, 14*365, 45*365)
   n_age <- length(age_group_sizes) + 1

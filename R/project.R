@@ -120,7 +120,12 @@ project_point_estimate <- function(
     ##first we check the demographic data holds up (returns a plot for comparison)
     #dummy variables
     total_population <- S_0[[1]] + R_0[[1]]
-    total_population[1:2] <- total_population[1:2] + M_0[[1]]
+    if(!is.null(M_0[[1]])){
+        total_population[seq_along(M_0[[1]])] <- total_population[seq_along(M_0[[1]])] + M_0[[1]]
+        M_0_temp <- rep(0, length(M_0[[1]]))
+    } else {
+        M_0_temp <- NULL
+    }
     demographics <- simulate(
         type = type,
         t = seq(0, t_projection_starts),
@@ -140,7 +145,7 @@ project_point_estimate <- function(
         additional_parameters = additional_parameters,
         S_0 = total_population,
         R_0 = rep(0, n_age),
-        M_0 = rep(0, 2)
+        M_0 = M_0_temp
     ) %>%
         format_output(
             "Population"
