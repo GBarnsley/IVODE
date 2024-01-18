@@ -180,7 +180,7 @@ project_point_estimate <- function(
     projections <- purrr::map_dfr(pars_list, ~do.call(simulate, .x) %>%
         drop_first_row_output() %>%
         format_output(
-            c("Immune", "Population"), reduce_age = FALSE
+            c("Immune", "Immune(Disease)", "Population"), reduce_age = FALSE
         ), .id = "vaccine_type"
     )
 
