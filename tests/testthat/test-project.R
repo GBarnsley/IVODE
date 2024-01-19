@@ -74,8 +74,11 @@ test_that("deterministic point estimate projection gaza", {
   R_0 <- list(PCV = rep(1000, n_age), Measles = rep(2000, n_age))
 
   additional_parameters <- list(
+    PCV = list(
     prop_death = rep(1, n_age)
-  )
+  ), Measles = list(
+    prop_death = rep(1, n_age)
+  ))
 
   output <- project_point_estimate(
     type,

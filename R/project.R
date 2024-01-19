@@ -33,6 +33,9 @@ collate_parameters <- function(
     check_list_format(S_0, vaccine_names)
     check_list_format(R_0, vaccine_names)
     check_list_format(M_0, vaccine_names)
+    if(!is.null(additional_parameters)){
+        check_list_format(additional_parameters, vaccine_names)
+    }
     #pivot the lists
     names(vaccine_names) <- vaccine_names
     purrr::map(
@@ -47,6 +50,7 @@ collate_parameters <- function(
             S_0 = S_0[[.x]],
             R_0 = R_0[[.x]],
             M_0 = M_0[[.x]],
+            additional_parameters = additional_parameters[[.x]],
             type = type,
             t = t,
             age_group_sizes = age_group_sizes,
@@ -54,8 +58,7 @@ collate_parameters <- function(
             tt_death_rates = tt_death_rates,
             birth_rates = birth_rates,
             tt_birth_rates = tt_birth_rates,
-            duration_of_maternal_immunity = duration_of_maternal_immunity,
-            additional_parameters = additional_parameters
+            duration_of_maternal_immunity = duration_of_maternal_immunity
         )
     )
 }
@@ -78,7 +81,7 @@ drop_first_row_output <- function(object) {
 #' @param birth_rates Vector of birth rates
 #' @param tt_birth_rates Vector of time varying birth rates
 #' @param duration_of_maternal_immunity Duration of maternal immunity
-#' @param additional_parameters List of additional parameters,default NULL
+#' @param additional_parameters List of additional parameters,default NULL, if specified should be for each disease
 #' @param vaccine_names Vector of vaccine names
 #' @param force_of_infection list of named vectors of force of infection
 #' @param tt_force_of_infection list of named vectors of time varying force of infection
@@ -142,7 +145,7 @@ project_point_estimate <- function(
         tt_vaccinations = NULL,
         duration_of_immunity = 100,
         duration_of_maternal_immunity = duration_of_maternal_immunity,
-        additional_parameters = additional_parameters,
+        additional_parameters = additional_parameters[[1]],
         S_0 = total_population,
         R_0 = rep(0, n_age),
         M_0 = M_0_temp

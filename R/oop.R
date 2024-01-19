@@ -427,6 +427,12 @@ setMethod(
         prop_death <- additional_parameters$prop_death
         check_format_age_group_par_no_tt(prop_death, pars_list$n_age)
         pars_list$prop_death <- prop_death
+        if(!"adjust_for_crude_foi" %in% names(additional_parameters)){
+            pars_list$adjust_for_crude_foi <- 0
+        } else {
+            pars_list$adjust_for_crude_foi <- as.numeric(additional_parameters$adjust_for_crude_foi)
+        }
+
         return(pars_list)
     }
 )

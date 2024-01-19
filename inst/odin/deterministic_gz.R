@@ -35,6 +35,8 @@ dim(tt_crude_foi) <- user()
 crude_foi[] <- user()
 dim(crude_foi) <- length(tt_crude_foi)
 
+adjust_for_crude_foi <- user()
+
 t_crude_foi <- interpolate(tt_crude_foi, crude_foi, "constant")
 
 tt_vaccination_coverage[] <- user()
@@ -121,7 +123,7 @@ dim(loses_immunity) <- n_age
 #must adjust crude foi for the fact that some people are immune
 
 #this can't go over 1 else the mathematics breaks, also crude_foi can't be greater than S/N at any point else this limit is met.
-t_adjusted_foi <- min(t_crude_foi * sum(total_pop[]) / sum(susceptible_pop[]), 1)
+t_adjusted_foi <- if (adjust_for_crude_foi) min(t_crude_foi * sum(total_pop[]) / sum(susceptible_pop[]), 1) else t_crude_foi
 
 infections_S[] <- t_adjusted_foi * S[i]
 dim(infections_S) <- n_age

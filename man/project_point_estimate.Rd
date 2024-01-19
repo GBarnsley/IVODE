@@ -47,7 +47,7 @@ project_point_estimate(
 
 \item{duration_of_maternal_immunity}{Duration of maternal immunity}
 
-\item{additional_parameters}{List of additional parameters,default NULL}
+\item{additional_parameters}{List of additional parameters,default NULL, if specified should be for each disease}
 
 \item{vaccine_names}{Vector of vaccine names}
 
