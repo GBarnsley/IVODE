@@ -8,16 +8,10 @@ setClass(
         output = "array"
     )
 )
-#' Define the deterministic model class
+#' Define the static_model model class
 #' @noRd
 setClass(
-    "deterministic",
-    contains = "IVODE_model"
-)
-#' Define the deterministic_gz model class
-#' @noRd
-setClass(
-    "deterministic_gz",
+    "static_model",
     contains = "IVODE_model"
 )
 #' Function to get generate an object of given types class
@@ -119,7 +113,7 @@ setMethod(
 #' @noRd
 setMethod(
     "format_death_rate",
-    signature(type = "deterministic_gz"),
+    signature(type = "static_model"),
     function(type, pars_list, death_rate, tt_death_rate) {
         return(format_time_par(type, pars_list, death_rate, tt_death_rate, "crude_death_rate"))
     }
@@ -153,7 +147,7 @@ setMethod(
 #' @noRd
 setMethod(
     "format_birth_rate",
-    signature(type = "deterministic_gz"),
+    signature(type = "static_model"),
     function(type, pars_list, birth_rate, tt_birth_rate) {
         pars_list <- format_time_par(type, pars_list, birth_rate, tt_birth_rate, "crude_birth_rate")
         #determine which age groups are child bearing
@@ -191,7 +185,7 @@ setMethod(
 #' @noRd
 setMethod(
     "format_foi",
-    signature(type = "deterministic_gz"),
+    signature(type = "static_model"),
     function(type, pars_list, foi, tt_foi) {
         pars_list <- format_time_par(type, pars_list, foi, tt_foi, "crude_foi")
         return(pars_list)
@@ -273,7 +267,7 @@ setMethod(
 #' @noRd
 setMethod(
     "format_maternal_waning",
-    signature(type = "deterministic_gz"),
+    signature(type = "static_model"),
     function(type, pars_list, duration_of_maternal_immunity) {
         age_group_sizes <- c(1/pars_list$age_rate, 0)
         #select endpoint closest to maternal immunity duration given
@@ -328,7 +322,7 @@ setMethod(
 #' @noRd
 setMethod(
     "format_initial_conditions_M",
-    signature(type = "deterministic_gz"),
+    signature(type = "static_model"),
     function(type, pars_list, M_0) {
         if (!is.null(M_0)) {
             warning("M_0 cannot currently be specified for this model type, will be initalised at 0")
@@ -365,7 +359,7 @@ setMethod(
 #' @noRd
 setMethod(
     "format_vaccinations",
-    signature(type = "deterministic_gz"),
+    signature(type = "static_model"),
     function(type, pars_list, vaccinations, tt_vaccinations) {
         if (is.null(tt_vaccinations)) {
             tt_vaccinations <- 0
@@ -419,7 +413,7 @@ setMethod(
 #' @noRd
 setMethod(
     "format_additional",
-    signature(type = "deterministic_gz"),
+    signature(type = "static_model"),
     function(type, pars_list, additional_parameters) {
         if(!"prop_death" %in% names(additional_parameters)){
             stop("Please define additional_parameters$prop_death, which is the relative risk of death for each age group")
