@@ -5,8 +5,8 @@ odin::odin_package(here::here())
 document()
 load_all()
 
-use_r("project")
-use_test("project")
+use_r("sample_parameters")
+use_test("sample_parameters")
 use_package("methods")
 
 test()

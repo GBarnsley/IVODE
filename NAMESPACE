@@ -2,6 +2,7 @@
 
 export(format_output)
 export(project_point_estimate)
+export(sample_parameters)
 export(simulate)
 exportMethods(format_output)
 importFrom(magrittr,"%>%")
