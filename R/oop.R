@@ -14,6 +14,12 @@ setClass(
     "static_model",
     contains = "IVODE_model"
 )
+#' Define the static_model model class
+#' @noRd
+setClass(
+    "dynamic_model",
+    contains = "static_model"
+)
 #' Function to get generate an object of given types class
 #' @noRd
 call_type <- function(type) {
@@ -181,13 +187,29 @@ setMethod(
         )
     }
 )
-#' Method for gz to format birth rate
+#' Method for gz to format foi
 #' @noRd
 setMethod(
     "format_foi",
     signature(type = "static_model"),
     function(type, pars_list, foi, tt_foi) {
+        if(any(foi > 1)){
+            stop("As static model foi is risk of infection, must be less than 1")
+        }
         pars_list <- format_time_par(type, pars_list, foi, tt_foi, "crude_foi")
+        return(pars_list)
+    }
+)
+#' Method for dynamic to format foi
+#' @noRd
+setMethod(
+    "format_foi",
+    signature(type = "dynamic_model"),
+    function(type, pars_list, foi, tt_foi) {
+        if(any(foi < 1)){
+            warning("As dynamic model foi is R0, expecting number greater than 1")
+        }
+        pars_list <- format_time_par(type, pars_list, foi, tt_foi, "R0")
         return(pars_list)
     }
 )
@@ -283,6 +305,37 @@ setMethod(
         return(pars_list)
     }
 )
+#' Format infection periods
+#' @noRd
+setGeneric(
+    "format_infection_periods",
+    function(type, pars_list, duration, name) {
+        standardGeneric("format_infection_periods")
+    }
+)
+#' Default to format infection periods
+#' @noRd
+setMethod(
+    "format_infection_periods",
+    signature(type = "IVODE_model"),
+    function(type, pars_list, duration, name) {
+        if(!is.null(duration)) {
+            warning(paste0(name, " not defined for this model type, set to NULL to avoid this warning"))
+        }
+        return(pars_list)
+    }
+)
+#' Default to format infection periods
+#' @noRd
+setMethod(
+    "format_infection_periods",
+    signature(type = "dynamic_model"),
+    function(type, pars_list, duration, name) {
+        pars_list[[paste0(name, "_transition_rate")]] <- 1/duration
+
+        return(pars_list)
+    }
+)
 #' Format initial conditions
 #' @noRd
 setGeneric(
@@ -329,6 +382,35 @@ setMethod(
         }
         pars_list$M_0 <- rep(0, pars_list$n_maternal)
         return(pars_list)
+    }
+)
+#' Format initial conditions
+#' @noRd
+setGeneric(
+    "format_initial_conditions_I",
+    function(type, pars_list, I_0) {
+        standardGeneric("format_initial_conditions_I")
+    }
+)
+#' Default to format initial conditions
+#' @noRd
+setMethod(
+    "format_initial_conditions_I",
+    signature(type = "IVODE_model"),
+    function(type, pars_list, I_0) {
+        if (!is.null(I_0)) {
+            warning("I_0 not defined for this model, set to NULL to avoid this warning")
+        }
+        pars_list
+    }
+)
+#' format initial conditions for gaza model
+#' @noRd
+setMethod(
+    "format_initial_conditions_I",
+    signature(type = "dynamic_model"),
+    function(type, pars_list, I_0) {
+        format_initial_conditions(type, pars_list, I_0, "I")
     }
 )
 #' Format vaccine doses
@@ -397,14 +479,14 @@ setGeneric(
         standardGeneric("format_additional")
     }
 )
-#' Default to format vaccine doses
+#' gz method to format vaccine doses
 #' @noRd
 setMethod(
     "format_additional",
     signature(type = "IVODE_model"),
     function(type, pars_list, additional_parameters) {
-        if(!is.null(additional_parameters)) {
-            stop("additional_parameters not defined for this model type")
+        if(!is.null(additional_parameters)){
+            warning("additional_parameters not defined for this model, set to NULL to avoid this warning")
         }
         return(pars_list)
     }
@@ -416,7 +498,8 @@ setMethod(
     signature(type = "static_model"),
     function(type, pars_list, additional_parameters) {
         if(!"prop_death" %in% names(additional_parameters)){
-            stop("Please define additional_parameters$prop_death, which is the relative risk of death for each age group")
+            warning("Please define additional_parameters$prop_death, which is the relative risk of death for each age group, assuming this is flat")
+            prop_death <- rep(1, length(pars_list$age_group_sizes) + 1)
         }
         prop_death <- additional_parameters$prop_death
         check_format_age_group_par_no_tt(prop_death, pars_list$n_age)
@@ -428,5 +511,43 @@ setMethod(
         }
 
         return(pars_list)
+    }
+)
+#' gz method to format vaccine doses
+#' @noRd
+setMethod(
+    "format_additional",
+    signature(type = "dynamic_model"),
+    function(type, pars_list, additional_parameters) {
+        if(!"prop_death" %in% names(additional_parameters)){
+            warning("Please define additional_parameters$prop_death, which is the relative risk of death for each age group, assuming this is flat")
+            prop_death <- rep(1, length(pars_list$age_group_sizes) + 1)
+        }
+        prop_death <- additional_parameters$prop_death
+        check_format_age_group_par_no_tt(prop_death, pars_list$n_age)
+        pars_list$prop_death <- prop_death
+        return(pars_list)
+    }
+)
+#' run actual model
+#' @noRd
+setGeneric(
+    "call_model",
+    function(type, t) {
+        standardGeneric("call_model")
+    }
+)
+#' Default to run model via odin
+#' @noRd
+setMethod(
+    "call_model",
+    signature(type = "IVODE_model"),
+    function(type, t) {
+        model_instance <- do.call(type@model_function, type@parameters)
+        output <- model_instance$run(t)
+
+        type@output <- output
+
+        type
     }
 )

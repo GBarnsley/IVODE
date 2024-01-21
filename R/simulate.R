@@ -16,8 +16,9 @@
 #' @param duration_of_immunity Duration of protection (in days) from vaccines and natural immunity
 #' @param duration_of_maternal_immunity Duration of maternal immunity
 #' @param S_0 Initial susceptible population
+#' @param I_0 Initial infectious population, if the model takes it
 #' @param R_0 Initial recovered population
-#' @param M_0 Initial maternal immunity population
+#' @param M_0 Initial maternal immunity population, if the model takes it
 #' @param additional_parameters List of additional parameters
 #' @return output array of results
 #' @export
@@ -37,7 +38,10 @@ simulate <- function(
     tt_vaccinations = NULL,
     duration_of_immunity,
     duration_of_maternal_immunity,
+    duration_of_pre_infectious,
+    duration_of_infectious,
     S_0,
+    I_0,
     R_0,
     M_0,
     additional_parameters = NULL
@@ -71,6 +75,8 @@ simulate <- function(
 
     check_duration(duration_of_immunity)
     check_duration(duration_of_maternal_immunity)
+    #check_duration(duration_of_pre_infectious)
+    #check_duration(duration_of_infectious)
 
     check_initial_conditions(S_0, n_age)
     check_initial_conditions(R_0, n_age)
@@ -95,11 +101,17 @@ simulate <- function(
 
     pars_list <- format_maternal_waning(type_class, pars_list, duration_of_maternal_immunity)
 
+    pars_list <- format_infection_periods(type_class, pars_list, duration_of_pre_infectious, "pre_infectious")
+
+    pars_list <- format_infection_periods(type_class, pars_list, duration_of_infectious, "infectious")
+
     pars_list <- format_initial_conditions(type_class, pars_list, S_0, "S")
 
     pars_list <- format_initial_conditions(type_class, pars_list, R_0, "R")
 
     pars_list <- format_initial_conditions_M(type_class, pars_list, M_0)
+
+    pars_list <- format_initial_conditions_I(type_class, pars_list, I_0)
 
     pars_list <- format_vaccinations(type_class, pars_list, vaccinations, tt_vaccinations)
     
@@ -107,10 +119,6 @@ simulate <- function(
 
     type_class@parameters <- pars_list
 
-    model_instance <- do.call(type_class@model_function, type_class@parameters)
-    output <- model_instance$run(t)
+    call_model(type_class, t)
 
-    type_class@output <- output
-    
-    type_class
 }
