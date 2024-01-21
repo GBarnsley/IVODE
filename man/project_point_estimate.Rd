@@ -22,8 +22,11 @@ project_point_estimate(
   vaccine_efficacy_disease,
   vaccinations,
   tt_vaccinations = NULL,
+  duration_of_pre_infectious,
+  duration_of_infectious,
   duration_of_immunity,
   S_0,
+  I_0,
   R_0,
   M_0
 )
@@ -63,9 +66,15 @@ project_point_estimate(
 
 \item{tt_vaccinations}{list of named vectors of time varying vaccine doses}
 
+\item{duration_of_pre_infectious}{list of named vectors of duration of the pre-infectious period}
+
+\item{duration_of_infectious}{list of named vectors of duration of the infectious period}
+
 \item{duration_of_immunity}{list of named vectors of duration of immunity}
 
 \item{S_0}{list of named vectors of initial susceptibles}
+
+\item{I_0}{list of named vectors of initial infectious}
 
 \item{R_0}{list of named vectors of initial recovered}
 

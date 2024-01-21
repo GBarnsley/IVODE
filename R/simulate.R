@@ -13,6 +13,8 @@
 #' @param vaccine_efficacy_disease Efficacy of vaccine against disease, should be the total efficacy not adjusted for protection against infection
 #' @param vaccinations Doses or rates of vaccine given each day
 #' @param tt_vaccinations Times at which vaccination rate changes
+#' @param duration_of_pre_infectious Duration of pre-infectious period (in days)
+#' @param duration_of_infectious Duration of infectious (in days)
 #' @param duration_of_immunity Duration of protection (in days) from vaccines and natural immunity
 #' @param duration_of_maternal_immunity Duration of maternal immunity
 #' @param S_0 Initial susceptible population

@@ -71,14 +71,14 @@ I_0[] <- user()
 dim(I_0) <- n_age
 
 #transistions
-total_pop[1:n_maternal] <- R[i] + S[i] + V[i] + M[i] + VD[i]
-total_pop[(n_maternal + 1):n_age] <- R[i] + S[i] + V[i] + VD[i]
+total_pop[1:n_maternal] <- R[i] + S[i] + V[i] + M[i] + VD[i] + I[i] + E[i]
+total_pop[(n_maternal + 1):n_age] <- R[i] + S[i] + V[i] + VD[i] + I[i] + E[i]
 dim(total_pop) <- n_age
 
 total_child_bearing[] <- total_pop[i] * child_bearing[i]
 dim(total_child_bearing) <- n_age
 
-susceptible_pop[] <- S[i] + VD[i]
+susceptible_pop[] <- S[i] + VD[i] + I[i] + E[i]
 dim(susceptible_pop) <- n_age
 
 susceptible_child_bearing[] <- (susceptible_pop[i]) * child_bearing[i]

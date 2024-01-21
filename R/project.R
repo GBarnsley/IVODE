@@ -9,8 +9,11 @@ collate_parameters <- function(
     vaccinations,
     tt_vaccinations,
     duration_of_immunity,
+    duration_of_pre_infectious,
+    duration_of_infectious,
     additional_parameters,
     S_0,
+    I_0,
     R_0,
     M_0,
     type,
@@ -29,13 +32,15 @@ collate_parameters <- function(
     check_list_format(vaccine_efficacy_disease, vaccine_names)
     check_list_format(vaccinations, vaccine_names)
     check_list_format(tt_vaccinations, vaccine_names)
+    check_list_format(duration_of_pre_infectious, vaccine_names)
+    check_list_format(duration_of_infectious, vaccine_names)
     check_list_format(duration_of_immunity, vaccine_names)
     check_list_format(S_0, vaccine_names)
     check_list_format(R_0, vaccine_names)
     check_list_format(M_0, vaccine_names)
-    if(!is.null(additional_parameters)){
-        check_list_format(additional_parameters, vaccine_names)
-    }
+    check_list_format(I_0, vaccine_names)
+    check_list_format(additional_parameters, vaccine_names)
+    check_list_format(additional_parameters, vaccine_names)
     #pivot the lists
     names(vaccine_names) <- vaccine_names
     purrr::map(
@@ -46,8 +51,11 @@ collate_parameters <- function(
             vaccine_efficacy_disease = vaccine_efficacy_disease[[.x]],
             vaccinations = vaccinations[[.x]],
             tt_vaccinations = tt_vaccinations[[.x]],
+            duration_of_pre_infectious = duration_of_pre_infectious[[.x]],
+            duration_of_infectious = duration_of_infectious[[.x]],
             duration_of_immunity = duration_of_immunity[[.x]],
             S_0 = S_0[[.x]],
+            I_0 = I_0[[.x]],
             R_0 = R_0[[.x]],
             M_0 = M_0[[.x]],
             additional_parameters = additional_parameters[[.x]],
@@ -89,8 +97,11 @@ drop_first_row_output <- function(object) {
 #' @param vaccine_efficacy_disease list of named vectors of against disease, should be the total efficacy not adjusted for protection against infection
 #' @param vaccinations list of named vectors of vaccine dose/rate parameters
 #' @param tt_vaccinations list of named vectors of time varying vaccine doses
+#' @param duration_of_pre_infectious list of named vectors of duration of the pre-infectious period
+#' @param duration_of_infectious list of named vectors of duration of the infectious period
 #' @param duration_of_immunity list of named vectors of duration of immunity
 #' @param S_0 list of named vectors of initial susceptibles
+#' @param I_0 list of named vectors of initial infectious
 #' @param R_0 list of named vectors of initial recovered
 #' @param M_0 list of named vectors of initial maternal immunity
 #' 
@@ -113,8 +124,11 @@ project_point_estimate <- function(
     vaccine_efficacy_disease,
     vaccinations,
     tt_vaccinations = NULL,
+    duration_of_pre_infectious,
+    duration_of_infectious,
     duration_of_immunity,
     S_0,
+    I_0,
     R_0,
     M_0
 ) {
@@ -129,6 +143,12 @@ project_point_estimate <- function(
     } else {
         M_0_temp <- NULL
     }
+    if(!is.null(I_0[[1]])){
+        total_population[seq_along(I_0[[1]])] <- total_population[seq_along(I_0[[1]])] + I_0[[1]]
+        I_0_temp <- rep(0, length(I_0[[1]]))
+    } else {
+        I_0_temp <- NULL
+    }
     demographics <- simulate(
         type = type,
         t = seq(0, t_projection_starts),
@@ -137,16 +157,19 @@ project_point_estimate <- function(
         tt_death_rates = tt_death_rates,
         birth_rates = birth_rates,
         tt_birth_rates = tt_birth_rates,
-        force_of_infection = 0,
+        force_of_infection = NULL,
         tt_force_of_infection = NULL,
         vaccine_efficacy = 0,
         vaccine_efficacy_disease = 0,
         vaccinations = rep(0, n_age),
         tt_vaccinations = NULL,
+        duration_of_pre_infectious = duration_of_pre_infectious[[1]],
+        duration_of_infectious = duration_of_infectious[[1]],
         duration_of_immunity = 100,
         duration_of_maternal_immunity = duration_of_maternal_immunity,
         additional_parameters = additional_parameters[[1]],
         S_0 = total_population,
+        I_0 = I_0_temp,
         R_0 = rep(0, n_age),
         M_0 = M_0_temp
     ) %>%
@@ -164,6 +187,8 @@ project_point_estimate <- function(
         vaccine_efficacy_disease = vaccine_efficacy_disease,
         vaccinations = vaccinations,
         tt_vaccinations = tt_vaccinations,
+        duration_of_pre_infectious = duration_of_pre_infectious,
+        duration_of_infectious = duration_of_infectious,
         duration_of_immunity = duration_of_immunity,
         duration_of_maternal_immunity = duration_of_maternal_immunity,
         type = type,
@@ -174,6 +199,7 @@ project_point_estimate <- function(
         birth_rates = birth_rates,
         tt_birth_rates = tt_birth_rates,
         S_0 = S_0,
+        I_0 = I_0,
         R_0 = R_0,
         M_0 = M_0,
         additional_parameters = additional_parameters

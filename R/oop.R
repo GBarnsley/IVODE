@@ -193,8 +193,13 @@ setMethod(
     "format_foi",
     signature(type = "static_model"),
     function(type, pars_list, foi, tt_foi) {
-        if(any(foi > 1)){
+        if(is.null(foi)){
+            foi <- 0
+            tt_foi <- 0
+        } else {
+            if(any(foi > 1)){
             stop("As static model foi is risk of infection, must be less than 1")
+            }
         }
         pars_list <- format_time_par(type, pars_list, foi, tt_foi, "crude_foi")
         return(pars_list)
@@ -206,8 +211,13 @@ setMethod(
     "format_foi",
     signature(type = "dynamic_model"),
     function(type, pars_list, foi, tt_foi) {
-        if(any(foi < 1)){
-            warning("As dynamic model foi is R0, expecting number greater than 1")
+        if(is.null(foi)){
+            foi <- 0
+            tt_foi <- 0
+        } else {
+            if(any(foi < 1)){
+                warning("As dynamic model foi is R0, expecting number greater than 1, use NULL to avoid this warning")
+            }
         }
         pars_list <- format_time_par(type, pars_list, foi, tt_foi, "R0")
         return(pars_list)
@@ -549,5 +559,49 @@ setMethod(
         type@output <- output
 
         type
+    }
+)
+#' get compartment to output matching
+#' @noRd
+setGeneric(
+    "get_matchings",
+    function(type) {
+        standardGeneric("get_matchings")
+    }
+)
+#' Default matchings
+#' @noRd
+setMethod(
+    "get_matchings",
+    signature(type = "IVODE_model"),
+    function(type) {
+        list(
+            Susceptible = c("S", "VD"),
+            Immune = c("V", "R", "M"),
+            `Immune(Acquired)` = "R",
+            `Immune(Vaccine)` = "V",
+            `Immune(Maternal)` = "M",
+            `Immune(Disease)` = c("V", "R", "M", "VD"),
+            Doses = "vaccination_doses",
+            Population = c("S", "R", "M", "V", "VD")
+        )
+    }
+)
+#' dynamic specific matchings
+#' @noRd
+setMethod(
+    "get_matchings",
+    signature(type = "dynamic_model"),
+    function(type) {
+        list(
+            Susceptible = c("S", "VD"),
+            Immune = c("V", "R", "M"),
+            `Immune(Acquired)` = "R",
+            `Immune(Vaccine)` = "V",
+            `Immune(Maternal)` = "M",
+            `Immune(Disease)` = c("V", "R", "M", "VD"),
+            Doses = "vaccination_doses",
+            Population = c("S", "R", "M", "V", "VD", "I", "E")
+        )
     }
 )

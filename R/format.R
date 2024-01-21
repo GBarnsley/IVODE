@@ -24,16 +24,7 @@ setMethod(
         }
 
         #match to compartment names
-        matchings <- list(
-            Susceptible = c("S", "VD"),
-            Immune = c("V", "R", "M"),
-            `Immune(Acquired)` = "R",
-            `Immune(Vaccine)` = "V",
-            `Immune(Maternal)` = "M",
-            `Immune(Disease)` = c("V", "R", "M", "VD"),
-            Doses = "vaccination_doses",
-            Population = c("S", "R", "M", "V", "VD")
-        )
+        matchings <- get_matchings(output)
         #convert output to correct format
         n_age <- output@parameters$n_age
         reformatted_output <- as.data.frame(output@output) %>%

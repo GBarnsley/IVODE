@@ -1447,13 +1447,13 @@ void dynamic_model_rhs(dynamic_model_internal* internal, double t, double * stat
     internal->gains_immunity[i - 1] = internal->infectious_transition_rate * I[i - 1];
   }
   for (int i = 1; i <= internal->dim_susceptible_pop; ++i) {
-    internal->susceptible_pop[i - 1] = S[i - 1] + VD[i - 1];
+    internal->susceptible_pop[i - 1] = S[i - 1] + VD[i - 1] + I[i - 1] + E[i - 1];
   }
   for (int i = 1; i <= internal->n_maternal; ++i) {
-    internal->total_pop[i - 1] = R[i - 1] + S[i - 1] + V[i - 1] + M[i - 1] + VD[i - 1];
+    internal->total_pop[i - 1] = R[i - 1] + S[i - 1] + V[i - 1] + M[i - 1] + VD[i - 1] + I[i - 1] + E[i - 1];
   }
   for (int i = (internal->n_maternal + 1); i <= internal->n_age; ++i) {
-    internal->total_pop[i - 1] = R[i - 1] + S[i - 1] + V[i - 1] + VD[i - 1];
+    internal->total_pop[i - 1] = R[i - 1] + S[i - 1] + V[i - 1] + VD[i - 1] + I[i - 1] + E[i - 1];
   }
   for (int i = 1; i <= internal->dim_waning_R; ++i) {
     internal->waning_R[i - 1] = internal->waning * R[i - 1];

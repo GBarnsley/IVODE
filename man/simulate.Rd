@@ -20,7 +20,10 @@ simulate(
   tt_vaccinations = NULL,
   duration_of_immunity,
   duration_of_maternal_immunity,
+  duration_of_pre_infectious,
+  duration_of_infectious,
   S_0,
+  I_0,
   R_0,
   M_0,
   additional_parameters = NULL
@@ -57,11 +60,17 @@ simulate(
 
 \item{duration_of_maternal_immunity}{Duration of maternal immunity}
 
+\item{duration_of_pre_infectious}{Duration of pre-infectious period (in days)}
+
+\item{duration_of_infectious}{Duration of infectious (in days)}
+
 \item{S_0}{Initial susceptible population}
+
+\item{I_0}{Initial infectious population, if the model takes it}
 
 \item{R_0}{Initial recovered population}
 
-\item{M_0}{Initial maternal immunity population}
+\item{M_0}{Initial maternal immunity population, if the model takes it}
 
 \item{additional_parameters}{List of additional parameters}
 }

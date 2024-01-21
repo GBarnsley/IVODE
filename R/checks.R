@@ -133,11 +133,13 @@ check_initial_conditions <- function(initial_conditions, n_size) {
 #' @noRd
 check_list_format <- function(list_par, list_names) {
     list_par_name <- deparse(substitute(list_par))
-    if (!is.list(list_par)) {
-        stop(paste(list_par_name, "must be a list"))
-    }
-    if (any(!list_names %in% names(list_par))) {
-        stop(paste(list_par_name, "must contain and entry for each of", paste(list_names, collapse = ", ")))
+    if(!is.null(list_par)){
+        if (!is.list(list_par)) {
+            stop(paste(list_par_name, "must be a list"))
+        }
+        if (any(!list_names %in% names(list_par))) {
+            stop(paste(list_par_name, "must contain and entry for each of", paste(list_names, collapse = ", ")))
+        }
     }
 }
 #' Check the format of efficacy
