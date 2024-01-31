@@ -6,45 +6,34 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of IVODE is to …
+This *R*-package aims to model the gaining and waning of immunity to
+various vaccine-preventable diseases. The backend of this package is
+[Odin](https://github.com/mrc-ide/odin).
 
 ## Installation
 
 You can install the development version of IVODE like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+devtools::install_github("IVODE")
 ```
+
+Current models avaiable are:
+
+- static_model: static (meaning fixed force of infection) ODE model of
+  immunity to a vaccine-preventable disease
+- dynamic_model: dynamic (meaning infections and recovery are explictly
+  modelled) ODE model of immunity to a vaccine-preventable disease
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+Models are access through the functions: - `simulate` which simulates
+the given model for single set of parameters and returns the output as a
+tibble, - `project_point_estimate` which simulates the given model for a
+range of parameters (representing different diseases) and returns select
+outputs as a tibble
 
-``` r
-library(IVODE)
-## basic example code
-```
-
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+Other functions are: - `format_output` which can be used to format the
+output of `simulate` from compartment values to more understandable
+outputs such as people with immunity to infection - `sample_parameters`
+which can be used to sample parameters for range of diseases
