@@ -37,10 +37,12 @@ Current models avaiable are:
 ## Example
 
 Models are access through the functions:
+
  - `simulate` which simulates the given model for single set of parameters and returns the output as a tibble,
  - `project_point_estimate` which simulates the given model for a range of parameters (representing different diseases) and returns select outputs as a tibble
 
 Other functions are:
+
  - `format_output` which can be used to format the output of `simulate` from compartment values to more understandable outputs such as people with immunity to infection
  - `sample_parameters` which can be used to sample parameters for range of diseases
 
