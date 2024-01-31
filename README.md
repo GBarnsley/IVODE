@@ -20,10 +20,11 @@ devtools::install_github("IVODE")
 
 Current models avaiable are:
 
-- static_model: static (meaning fixed force of infection) ODE model of
+- *static_model*: static (meaning fixed force of infection) ODE model of
   immunity to a vaccine-preventable disease
-- dynamic_model: dynamic (meaning infections and recovery are explictly
-  modelled) ODE model of immunity to a vaccine-preventable disease
+- *dynamic_model*: dynamic (meaning infections and recovery are
+  explictly modelled) ODE model of immunity to a vaccine-preventable
+  disease
 
 ## Example
 
