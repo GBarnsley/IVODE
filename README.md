@@ -4,6 +4,8 @@
 # IVODE
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/GBarnsley/IVODE/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/GBarnsley/IVODE/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 This *R*-package aims to model the gaining and waning of immunity to
