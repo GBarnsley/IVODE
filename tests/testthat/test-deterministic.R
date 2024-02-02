@@ -50,6 +50,7 @@ test_that("static model", {
     M_0 = M_0,
     additional_parameters = additional_parameters
   )
+  test_det <- format_output(res, "Population", reduce_age = TRUE)
   # no nan
   expect_false(any(is.nan(res@output)))
   # all postive (with lower bound of 0.1)
