@@ -8,18 +8,6 @@ setClass(
         output = "array"
     )
 )
-#' Define the static_model model class
-#' @noRd
-setClass(
-    "static_model",
-    contains = "IVODE_model"
-)
-#' Define the static_model model class
-#' @noRd
-setClass(
-    "dynamic_model",
-    contains = "static_model"
-)
 #' Function to get generate an object of given types class
 #' @noRd
 call_type <- function(type) {
@@ -115,15 +103,6 @@ setMethod(
         )
     }
 )
-#' Method for gz to format death rate
-#' @noRd
-setMethod(
-    "format_death_rate",
-    signature(type = "static_model"),
-    function(type, pars_list, death_rate, tt_death_rate) {
-        return(format_time_par(type, pars_list, death_rate, tt_death_rate, "crude_death_rate"))
-    }
-)
 #' Format birth rate
 #' @noRd
 setGeneric(
@@ -149,19 +128,6 @@ setMethod(
         )
     }
 )
-#' Method for gz to format birth rate
-#' @noRd
-setMethod(
-    "format_birth_rate",
-    signature(type = "static_model"),
-    function(type, pars_list, birth_rate, tt_birth_rate) {
-        pars_list <- format_time_par(type, pars_list, birth_rate, tt_birth_rate, "crude_birth_rate")
-        #determine which age groups are child bearing
-        age_sizes <- 1/pars_list$age_rate
-        pars_list$child_bearing <- as.numeric(cumsum(age_sizes) >= (15*365) & cumsum(age_sizes) <= (45*365))
-        return(pars_list)
-    }
-)
 #' Format foi
 #' @noRd
 setGeneric(
@@ -185,42 +151,6 @@ setMethod(
                 "foi"
             )
         )
-    }
-)
-#' Method for gz to format foi
-#' @noRd
-setMethod(
-    "format_foi",
-    signature(type = "static_model"),
-    function(type, pars_list, foi, tt_foi) {
-        if(is.null(foi)){
-            foi <- 0
-            tt_foi <- 0
-        } else {
-            if(any(foi > 1)){
-            stop("As static model foi is risk of infection, must be less than 1")
-            }
-        }
-        pars_list <- format_time_par(type, pars_list, foi, tt_foi, "crude_foi")
-        return(pars_list)
-    }
-)
-#' Method for dynamic to format foi
-#' @noRd
-setMethod(
-    "format_foi",
-    signature(type = "dynamic_model"),
-    function(type, pars_list, foi, tt_foi) {
-        if(is.null(foi)){
-            foi <- 0
-            tt_foi <- 0
-        } else {
-            if(any(foi < 1)){
-                warning("As dynamic model foi is R0, expecting number greater than 1, use NULL to avoid this warning")
-            }
-        }
-        pars_list <- format_time_par(type, pars_list, foi, tt_foi, "R0")
-        return(pars_list)
     }
 )
 #' Format vaccine efficacy
@@ -295,26 +225,6 @@ setMethod(
         return(pars_list)
     }
 )
-#' Default to format maternal waning
-#' @noRd
-setMethod(
-    "format_maternal_waning",
-    signature(type = "static_model"),
-    function(type, pars_list, duration_of_maternal_immunity) {
-        age_group_sizes <- c(1/pars_list$age_rate, 0)
-        #select endpoint closest to maternal immunity duration given
-        age_group_ends <- cumsum(age_group_sizes)
-        pars_list$n_maternal <- which.min(abs(age_group_ends - duration_of_maternal_immunity))
-        if(abs(age_group_ends[pars_list$n_maternal] - duration_of_maternal_immunity) > 365/12) {
-            warning(paste0(
-                "simulated duration of natural immunity is ", age_group_ends[pars_list$n_maternal]*12/365,
-                " months, not ", duration_of_maternal_immunity*12/365,
-                " months, ensure this discprepancy is less than one month to remove this warning"
-            ))
-        }
-        return(pars_list)
-    }
-)
 #' Format infection periods
 #' @noRd
 setGeneric(
@@ -332,17 +242,6 @@ setMethod(
         if(!is.null(duration)) {
             warning(paste0(name, " not defined for this model type, set to NULL to avoid this warning"))
         }
-        return(pars_list)
-    }
-)
-#' Default to format infection periods
-#' @noRd
-setMethod(
-    "format_infection_periods",
-    signature(type = "dynamic_model"),
-    function(type, pars_list, duration, name) {
-        pars_list[[paste0(name, "_transition_rate")]] <- 1/duration
-
         return(pars_list)
     }
 )
@@ -381,19 +280,6 @@ setMethod(
         format_initial_conditions(type, pars_list, M_0, "M")
     }
 )
-#' format initial conditions for gaza model
-#' @noRd
-setMethod(
-    "format_initial_conditions_M",
-    signature(type = "static_model"),
-    function(type, pars_list, M_0) {
-        if (!is.null(M_0)) {
-            warning("M_0 cannot currently be specified for this model type, will be initalised at 0")
-        }
-        pars_list$M_0 <- rep(0, pars_list$n_maternal)
-        return(pars_list)
-    }
-)
 #' Format initial conditions
 #' @noRd
 setGeneric(
@@ -412,15 +298,6 @@ setMethod(
             warning("I_0 not defined for this model, set to NULL to avoid this warning")
         }
         pars_list
-    }
-)
-#' format initial conditions for gaza model
-#' @noRd
-setMethod(
-    "format_initial_conditions_I",
-    signature(type = "dynamic_model"),
-    function(type, pars_list, I_0) {
-        format_initial_conditions(type, pars_list, I_0, "I")
     }
 )
 #' Format vaccine doses
@@ -447,40 +324,6 @@ setMethod(
         return(pars_list)
     }
 )
-#' Gaza specific
-#' @noRd
-setMethod(
-    "format_vaccinations",
-    signature(type = "static_model"),
-    function(type, pars_list, vaccinations, tt_vaccinations) {
-        if (is.null(tt_vaccinations)) {
-            tt_vaccinations <- 0
-            #convert par to matrix
-            vaccinations <- matrix(vaccinations, nrow = 1)
-        }
-        check_format_percentage(vaccinations)
-        #convert from coverage to rate
-
-        vaccine_efficacy <- pars_list$vaccine_efficacy
-        vaccine_efficacy_disease <- pars_list$vaccine_efficacy_disease
-        
-        vaccine_efficacy_disease_adjusted <- (vaccine_efficacy_disease - vaccine_efficacy) / (1 - vaccine_efficacy)
-
-        vaccinations_partial <- vaccinations_complete <- vaccinations
-
-        for (t in 1:nrow(vaccinations)) {
-            vaccinations_complete[t, ] <- vaccinations[t, ] * vaccine_efficacy
-            vaccinations_partial[t, ] <- vaccinations[t, ] * (1-vaccine_efficacy) * vaccine_efficacy_disease_adjusted
-        }
-
-        pars_list$vaccine_efficacy <- pars_list$vaccine_efficacy_disease <- NULL
-
-        pars_list$vaccination_coverage <- vaccinations_complete
-        pars_list$vaccination_partial_coverage <- vaccinations_partial
-        pars_list$tt_vaccination_coverage <- tt_vaccinations
-        return(pars_list)
-    }
-)
 #' Format vaccine doses
 #' @noRd
 setGeneric(
@@ -498,44 +341,6 @@ setMethod(
         if(!is.null(additional_parameters)){
             warning("additional_parameters not defined for this model, set to NULL to avoid this warning")
         }
-        return(pars_list)
-    }
-)
-#' gz method to format vaccine doses
-#' @noRd
-setMethod(
-    "format_additional",
-    signature(type = "static_model"),
-    function(type, pars_list, additional_parameters) {
-        if(!"prop_death" %in% names(additional_parameters)){
-            warning("Please define additional_parameters$prop_death, which is the relative risk of death for each age group, assuming this is flat")
-            prop_death <- rep(1, length(pars_list$age_group_sizes) + 1)
-        }
-        prop_death <- additional_parameters$prop_death
-        check_format_age_group_par_no_tt(prop_death, pars_list$n_age)
-        pars_list$prop_death <- prop_death
-        if(!"adjust_for_crude_foi" %in% names(additional_parameters)){
-            pars_list$adjust_for_crude_foi <- 0
-        } else {
-            pars_list$adjust_for_crude_foi <- as.numeric(additional_parameters$adjust_for_crude_foi)
-        }
-
-        return(pars_list)
-    }
-)
-#' gz method to format vaccine doses
-#' @noRd
-setMethod(
-    "format_additional",
-    signature(type = "dynamic_model"),
-    function(type, pars_list, additional_parameters) {
-        if(!"prop_death" %in% names(additional_parameters)){
-            warning("Please define additional_parameters$prop_death, which is the relative risk of death for each age group, assuming this is flat")
-            prop_death <- rep(1, length(pars_list$age_group_sizes) + 1)
-        }
-        prop_death <- additional_parameters$prop_death
-        check_format_age_group_par_no_tt(prop_death, pars_list$n_age)
-        pars_list$prop_death <- prop_death
         return(pars_list)
     }
 )
@@ -584,24 +389,6 @@ setMethod(
             `Immune(Disease)` = c("V", "R", "M", "VD"),
             Doses = "vaccination_doses",
             Population = c("S", "R", "M", "V", "VD")
-        )
-    }
-)
-#' dynamic specific matchings
-#' @noRd
-setMethod(
-    "get_matchings",
-    signature(type = "dynamic_model"),
-    function(type) {
-        list(
-            Susceptible = c("S", "VD"),
-            Immune = c("V", "R", "M"),
-            `Immune(Acquired)` = "R",
-            `Immune(Vaccine)` = "V",
-            `Immune(Maternal)` = "M",
-            `Immune(Disease)` = c("V", "R", "M", "VD"),
-            Doses = "vaccination_doses",
-            Population = c("S", "R", "M", "V", "VD", "I", "E")
         )
     }
 )
