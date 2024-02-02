@@ -60,18 +60,10 @@ test_that("cohort model", {
   # all postive (with lower bound of 0.1)
   expect_true(all(res@output >= -0.1))
   #number of vaccinated people should roughly be doses * time * efficacy (no waning)
-  t <- c(0, 365 * 100)
+  t <- c(0, 365 * 10)#c(0, 365 * 100)
   force_of_infection <- 0
   duration_of_immunity <- Inf
-  age_group_sizes <- c(365/12, 365*(5/12), 365 * (11/12), 365, 14*365, 45*365)
-  n_age <- length(age_group_sizes) + 1
-  S_0 <- c(rep(5000, 1), rep(10, n_age - 1))
-  R_0 <- rep(0, n_age)
-  additional_parameters <- list(
-    prop_death = rep(1, n_age)
-  )
-  #not sure this makes sense
-  vaccinations <- c(0, 0, coverage, 0, 0, 0, 0)
+
   res <- simulate(
     type = type,
     t = t,
@@ -99,15 +91,15 @@ test_that("cohort model", {
 
 
   vaccine_immune <- format_output(res, "Immune", reduce_age = FALSE) %>%
-    dplyr::filter(age_group == 4 & t == max(t)) %>%
+    dplyr::filter(age_group == 3 & t == max(t)) %>%
     dplyr::pull(value) %>%
     sum()
   vaccine_immune_disease <- format_output(res, "Immune(Disease)", reduce_age = FALSE) %>%
-    dplyr::filter(age_group == 4 & t == max(t)) %>%
+    dplyr::filter(age_group == 3 & t == max(t)) %>%
     dplyr::pull(value) %>%
     sum()
   pop <- format_output(res, "Population", reduce_age = FALSE) %>%
-    dplyr::filter(age_group == 4 & t == max(t)) %>%
+    dplyr::filter(age_group == 3 & t == max(t)) %>%
     dplyr::pull(value) %>%
     sum()
   

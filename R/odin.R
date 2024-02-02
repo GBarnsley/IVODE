@@ -21,7 +21,9 @@ cohort_static_model_ <- R6::R6Class(
     user = c("adjust_for_crude_foi", "child_bearing", "crude_birth_rate",
              "crude_death_rate", "crude_foi", "M_0", "n_age", "n_maternal",
              "prop_death", "R_0", "S_0", "tt_crude_birth_rate",
-             "tt_crude_death_rate", "tt_crude_foi", "V_0", "VD_0", "waning"),
+             "tt_crude_death_rate", "tt_crude_foi", "tt_vaccination_rate",
+             "V_0", "vaccination_rate", "vaccine_efficacy",
+             "vaccine_efficacy_disease", "VD_0", "waning"),
 
     ## This is never called, but is used to ensure that R finds our
     ## symbols that we will use from the package; without this they
